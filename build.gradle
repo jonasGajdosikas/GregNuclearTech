@@ -160,10 +160,10 @@ dependencies {
 }
 
 // See com.example.examplemod.mixin.DummyMixin for information about mixins
-mixin {
-    add sourceSets.main, "mixins.${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
-}
+// mixin {
+//    add sourceSets.main, "mixins.${mod_id}.refmap.json"
+//    config "${mod_id}.mixins.json"
+//}
 
 tasks.named('processResources', ProcessResources).configure {
     var properties = [

@@ -1,0 +1,9 @@
+{
+  "ldlib": {
+    "connection": "gnt:block/casing/moderator/water_bloom_ctm",
+    "emissive": true
+  },
+  "shimmer": {
+    "bloom": true
+  }
+}

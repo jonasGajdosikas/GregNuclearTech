@@ -1,28 +1,32 @@
-package com.example.examplemod;
+package com.jogaj.gnt;
 
 import com.gregtechceu.gtceu.api.addon.GTAddon;
 import com.gregtechceu.gtceu.api.addon.IGTAddon;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 
+import com.jogaj.gnt.common.data.GNTBlocks;
 import net.minecraft.data.recipes.FinishedRecipe;
 
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 @GTAddon
-public class ExampleGTAddon implements IGTAddon {
+public class GNTAddon implements IGTAddon {
 
     @Override
     public GTRegistrate getRegistrate() {
-        return ExampleMod.EXAMPLE_REGISTRATE;
+        return GNT.REGISTRATE;
     }
 
     @Override
-    public void initializeAddon() {}
+    public void initializeAddon() {
+        GNTBlocks.init();
+        GNT.LOGGER.info("Greg Nuke Tech has loaded");
+    }
 
     @Override
     public String addonModId() {
-        return ExampleMod.MOD_ID;
+        return GNT.MOD_ID;
     }
 
     @Override
