@@ -1,0 +1,431 @@
+package com.jogaj.gnt.common.machine;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
+import com.gregtechceu.gtceu.api.capability.ITurbineMachine;
+import com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability;
+import com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability;
+import com.gregtechceu.gtceu.api.capability.recipe.IO;
+import com.gregtechceu.gtceu.api.capability.recipe.IRecipeHandler;
+import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDisplayUIMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMaintenanceMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IRotorHolderMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
+import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.ingredient.FluidIngredient;
+import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
+import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.jogaj.gnt.api.block.IModeratorType;
+import com.jogaj.gnt.common.block.ModeratorBlock;
+import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
+import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
+import lombok.Getter;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.server.TickTask;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.material.Fluids;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+public class NuclearReactor extends WorkableMultiblockMachine implements IExplosionMachine, IDisplayUIMachine, ITurbineMachine {
+    protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(NuclearReactor.class, WorkableElectricMultiblockMachine.MANAGED_FIELD_HOLDER);
+
+    public static final int MIN_DURABILITY_TO_WARN = 10;
+    public static final int TICKS_PER_HEAT_UPDATE = 10;
+    @Persisted @Getter private int controlRods;
+    @Persisted @Getter private double temp;
+    private double getHeat(){
+        return temp * moderatorType.getHeatCapacity();
+    }
+    private void addHeat(double heatToAdd){
+        temp += heatToAdd / moderatorType.getHeatCapacity();
+    }
+    long steamAvailablePerTick;
+
+    private @Getter IModeratorType moderatorType = ModeratorBlock.ModeratorType.WATER;
+
+    @Nullable protected TickableSubscription radiationHeatSubs;
+    protected ConditionalSubscriptionHandler tickSubscribtion;
+
+    private EnergyContainerList outputHatches;
+    private long netEnergyGeneratedLastSec;
+    private @Getter long outputPerSec;
+
+    private IMaintenanceMachine maintenance;
+    private final long BASE_EU_OUTPUT;
+
+    public NuclearReactor(IMachineBlockEntity holder, int tier,
+                          Object... args){
+        super(holder, args);
+        this.tickSubscribtion = new ConditionalSubscriptionHandler(this, this::generateEnergyFromHeatTick, this::isFormed);
+        this.BASE_EU_OUTPUT = GTValues.V[tier] * 2;
+        this.controlRods = 0;
+    }
+
+    //region Rotor stuff
+
+    private @Nullable IRotorHolderMachine getRotorHolder(){
+        for (IMultiPart part : getParts()){
+            if (part instanceof IRotorHolderMachine rotorHolder) return rotorHolder;
+        }
+        return null;
+    }
+
+    protected double rotorBoost(){
+        var rotorHolder = getRotorHolder();
+        if (rotorHolder == null || !rotorHolder.hasRotor()) return 0;
+        int maxSpeed = rotorHolder.getMaxRotorHolderSpeed();
+        int currentSpeed = rotorHolder.getRotorSpeed();
+        if (currentSpeed >= maxSpeed) return 1;
+        return Math.pow(1.0 * currentSpeed / maxSpeed, 2);
+    }
+
+    @Override
+    public boolean hasRotor() {
+        var rotorHolder = getRotorHolder();
+        return rotorHolder != null && rotorHolder.hasRotor();
+    }
+
+    @Override
+    public int getRotorSpeed() {
+        var rotorHolder = getRotorHolder();
+        if (rotorHolder != null && rotorHolder.hasRotor())
+            return rotorHolder.getRotorSpeed();
+        return 0;
+    }
+
+    @Override
+    public int getMaxRotorHolderSpeed() {
+        var rotorHolder = getRotorHolder();
+        if (rotorHolder != null && rotorHolder.hasRotor())
+            return rotorHolder.getMaxRotorHolderSpeed();
+        return 0;
+    }
+
+    @Override
+    public int getTotalEfficiency() {
+        var rotorHolder = getRotorHolder();
+        if (rotorHolder != null && rotorHolder.hasRotor())
+            return rotorHolder.getTotalEfficiency();
+        return -1;
+    }
+
+    @Override
+    public int getRotorDurabilityPercent() {
+        var rotorHolder = getRotorHolder();
+        if (rotorHolder == null || !rotorHolder.hasRotor()) return -1;
+        return rotorHolder.getRotorDurabilityPercent();
+    }
+
+    //endregion
+
+    @Override
+    public long getCurrentProduction() {
+        return 0;
+    }
+
+    public @Override long getOverclockVoltage(){
+        var rotorHolder = getRotorHolder();
+        if (rotorHolder == null || !rotorHolder.hasRotor()) return 0;
+        return BASE_EU_OUTPUT * rotorHolder.getTotalPower() / 100;
+    }
+
+
+    //////////////////////////////////////
+    // ********* Recipe Logic ********* //
+    //////////////////////////////////////
+
+
+
+    public @Override void onStructureFormed(){
+        super.onStructureFormed();
+        var type = getMultiblockState().getMatchContext().get("ModeratorType");
+        if (type instanceof IModeratorType moderator) moderatorType = moderator;
+        if (getLevel() instanceof ServerLevel serverLevel){
+            serverLevel.getServer().tell(new TickTask(0, this::updateRadiationHeatSubscription));
+        }
+        List<IEnergyContainer> outputs = new ArrayList<>();
+        Long2ObjectMap<IO> ioMap = getMultiblockState().getMatchContext().getOrCreate("ioMap", Long2ObjectMaps::emptyMap);
+        for (IMultiPart part: getParts()){
+            IO io = ioMap.getOrDefault(part.self().getPos().asLong(), IO.BOTH);
+            if (io == IO.NONE) continue;
+            if (part instanceof IMaintenanceMachine maintHatch) maintenance = maintHatch;
+            var handlersList = part.getRecipeHandlers();
+            for (var handlerList : handlersList){
+                if (!handlerList.isValid(io)) continue;
+
+                var containers = handlerList.getCapability(EURecipeCapability.CAP).stream()
+                        .filter(IEnergyContainer.class::isInstance)
+                        .map(IEnergyContainer.class::cast)
+                        .toList();
+
+                if (handlerList.getHandlerIO().support(IO.OUT))
+                    outputs.addAll(containers);
+                traitSubscriptions.add(handlerList.subscribe(tickSubscribtion::updateSubscription, EURecipeCapability.CAP));
+            }
+        }
+        outputHatches = new EnergyContainerList(outputs);
+    }
+
+    public @Override void onStructureInvalid(){
+        super.onStructureInvalid();
+        if (getLevel() instanceof ServerLevel serverLevel){
+            serverLevel.getServer().tell(new TickTask(0, this::updateRadiationHeatSubscription));
+        }
+    }
+
+    public @Override void onUnload(){
+        if (radiationHeatSubs != null){
+            radiationHeatSubs.unsubscribe();
+            radiationHeatSubs = null;
+        }
+        super.onUnload();
+    }
+
+    protected void updateRadiationHeatSubscription(){
+        if (temp > 0){
+            radiationHeatSubs = subscribeServerTick(radiationHeatSubs, this::updateCurrentradiationHeat);
+        } else if (radiationHeatSubs != null){
+            radiationHeatSubs.unsubscribe();
+            radiationHeatSubs = null;
+        }
+    }
+
+    protected void updateCurrentradiationHeat(){
+        if (recipeLogic.isWorking()){
+            if (getOffsetTimer() % TICKS_PER_HEAT_UPDATE == 0){
+                // Heat
+                // DONE: get recipe neutron production and add tickspergen*ctrlRodMult*(thermal+fast*conversion) heat
+                var activeRecipe = recipeLogic.getLastRecipe();
+                if (activeRecipe != null){
+                    int thermal = tryGetRecipeData(activeRecipe,"thermalNeutrons");
+                    int fast = tryGetRecipeData(activeRecipe,"fastNeutrons");
+                    int recipeHeat = (int)(thermal + moderatorType.getFastNeutronConversion() * fast);
+                    addHeat(TICKS_PER_HEAT_UPDATE * ctrlRodMultiplier() * recipeHeat);
+                }
+            } else if (temp > 0){
+                addHeat(-getHeatDissipation());
+            }
+        }
+
+        if (isFormed() && getOffsetTimer() % TICKS_PER_HEAT_UPDATE == 0){
+            var maxWaterDrain = (int)temp * TICKS_PER_HEAT_UPDATE / (ConfigHolder.INSTANCE.machines.largeBoilers.steamPerWater);
+            if (temp < 100){
+                steamAvailablePerTick = 0;
+            } else {
+                var drainWater = List.of(FluidIngredient.of(Fluids.WATER, maxWaterDrain));
+                List<IRecipeHandler<?>> inputTanks = new ArrayList<>();
+                inputTanks.addAll(getCapabilitiesFlat(IO.IN, FluidRecipeCapability.CAP));
+                inputTanks.addAll(getCapabilitiesFlat(IO.BOTH, FluidRecipeCapability.CAP));
+
+                for (IRecipeHandler<?> tank : inputTanks){
+                    //noinspection unchecked
+                    drainWater = (List<FluidIngredient>) tank.handleRecipe(IO.IN, null, drainWater, false);
+                    if (drainWater == null || drainWater.isEmpty()) break;
+                }
+                var drained = (drainWater == null || drainWater.isEmpty()) ? maxWaterDrain : maxWaterDrain - drainWater.get(0).getAmount();
+
+                if (drained > 0)
+                    steamAvailablePerTick = (long) drained * ConfigHolder.INSTANCE.machines.largeBoilers.steamPerWater;
+                if (temp > moderatorType.getMaxTemp()){
+                    int overheat = moderatorType.getMaxTemp() - (int) temp
+                            + maintenance.getNumMaintenanceProblems() * 10
+                            - GTValues.RNG.nextInt(100);
+                    if (overheat > 100){
+                        goVacNuke(overheat / 2f);
+                    }
+                    if (overheat > 0){
+                        byte problem = (byte)(0b1 << GTValues.RNG.nextInt(6));
+                        maintenance.setMaintenanceProblems(problem);
+                    }
+                }
+            }
+        }
+    }
+
+    void goVacNuke(float power){
+        doExplosion(power);
+        var center = getPos().below().relative(getFrontFacing().getOpposite());
+        if (GTValues.RNG.nextInt(100) > 80)
+            doExplosion(center, power);
+        for (Direction x : Direction.Plane.HORIZONTAL){
+            for (Direction y : Direction.Plane.VERTICAL){
+                if (GTValues.RNG.nextInt(100) > 80)
+                    doExplosion(center.relative(x).relative(y), power);
+            }
+        }
+    }
+
+    int tryGetRecipeData(GTRecipe recipe, String key){
+        return recipe.data.contains(key) ? recipe.data.getInt(key) : 0;
+    }
+
+    protected void generateEnergyFromHeatTick(){
+        if (Objects.requireNonNull(getLevel()).isClientSide) return;
+        if (getOffsetTimer() % 20 == 0){
+            outputPerSec = netEnergyGeneratedLastSec;
+            netEnergyGeneratedLastSec = 0;
+        }
+
+        if (isFormed()){
+            long energyCreated = generateEnergy(outputHatches.getEnergyCapacity() - outputHatches.getEnergyStored());
+            outputHatches.changeEnergy(energyCreated);
+            netEnergyGeneratedLastSec += energyCreated;
+
+        }
+    }
+
+    long generateEnergy(long tryGenerateAmount){
+        var rotorHolder = getRotorHolder();
+        if (rotorHolder == null) return 0;
+        double holderEfficiency = rotorHolder.getTotalEfficiency() / 100.0;
+
+        if (tryGenerateAmount < BASE_EU_OUTPUT || holderEfficiency <= 0) return 0;
+
+        int maxParallel = (int)(tryGenerateAmount / (32 * rotorBoost()));
+
+
+
+
+        return 0;
+    }
+    /*
+    public static ModifierFunction recipeModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe){
+        if (!(machine instanceof NuclearReactor reactor)) return RecipeModifier.nullWrongType(NuclearReactor.class, machine);
+
+        var rotorHolder = reactor.getRotorHolder();
+        if (rotorHolder == null) return ModifierFunction.NULL;
+
+        EnergyStack EUt = recipe.getOutputEUt();
+        long reactorMaxVoltage = reactor.getMaxVoltage();
+        double holderEfficiency = rotorHolder.getTotalEfficiency() / 100.0;
+
+        if (EUt.isEmpty() || reactorMaxVoltage <= EUt.voltage() || holderEfficiency <= 0) return ModifierFunction.NULL;
+
+        int maxParallel = (int)(reactorMaxVoltage / EUt.getTotalEU());
+        if (reactorMaxVoltage % EUt.getTotalEU() != 0) reactorMaxVoltage++;
+
+        int actualParallel = ParallelLogic.getParallelAmountFast(reactor, recipe, maxParallel);
+        double eutMultiplier = (maxParallel == actualParallel) ?
+                reactor.rotorBoost() * reactorMaxVoltage / EUt.voltage() :
+                reactor.rotorBoost() * actualParallel;
+
+        return ModifierFunction.builder()
+                .outputModifier(ContentModifier.multiplier(actualParallel))
+                .eutMultiplier(eutMultiplier)
+                .parallels(actualParallel)
+                .durationMultiplier(holderEfficiency)
+                .build();
+    }
+
+     */
+
+    protected int getHeatDissipation(){
+        return 1;
+    }
+    private double ctrlRodMultiplier(){
+        return 1.0 - (controlRods / 125.0);
+    }
+
+    /**
+     * Recipe Modifier for <b>Nuclear Reactors</b> - can be used as a valid {@link RecipeModifier}
+     * <p>
+     *     Duration is multiplied with {@code (1- controlRods/125)^-.95} if control rods are inserted more than 0
+     * </p>
+     *
+     * @param machine a {@link NuclearReactor}
+     * @param recipe recipe
+     * @return A {@link ModifierFunction} for the given reactor and recipe
+     */
+    public static ModifierFunction ctrlRodModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe){
+        if (!(machine instanceof NuclearReactor reactor)) return RecipeModifier.nullWrongType(NuclearReactor.class, machine);
+        if (reactor.controlRods == 0) return ModifierFunction.IDENTITY;
+        return ModifierFunction.builder()
+                .durationMultiplier(Math.pow(reactor.ctrlRodMultiplier(), -0.95))
+                .build();
+    }
+
+    public void addDisplayText(@NotNull List<Component> textList){
+        IDisplayUIMachine.super.addDisplayText(textList);
+        if (isFormed()){
+            textList.add(Component.translatable("gnt.multiblock.reactor.heat", temp, moderatorType.getMaxTemp()));
+            textList.add(Component.translatable("gnt.multiblock.reactor.powergen"));
+
+            var ctrlRodText = Component.translatable("gnt.multiblock.reactor.rods",
+                    ChatFormatting.AQUA.toString() + getControlRods() + "%")
+                    .withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                            Component.translatable("gnt.multiblock.reactor.rods.tooltip"))));
+            textList.add(ctrlRodText);
+
+            var buttonText = Component.translatable("gnt.multiblock.reactor.rods_modify");
+            buttonText.append(" ");
+            buttonText.append(ComponentPanelWidget.withButton(Component.literal("[-]"), "sub"));
+            buttonText.append(" ");
+            buttonText.append(ComponentPanelWidget.withButton(Component.literal("[+]"), "add"));
+            textList.add(buttonText);
+
+            textList.add(ComponentPanelWidget.withButton(
+                Component.literal(ChatFormatting.RED.toString())
+                    .append(Component.translatable("gnt.multiblock.reactor.scram"))
+                , "scram"));
+
+            var rotorHolder = getRotorHolder();
+            if (rotorHolder != null && rotorHolder.getRotorEfficiency() > 0){
+                textList.add(Component.translatable("gtceu.multiblock.turbine.rotor_speed",
+                        FormattingUtil.formatNumbers(rotorHolder.getRotorSpeed()),
+                        FormattingUtil.formatNumbers(rotorHolder.getMaxRotorHolderSpeed())));
+                textList.add(Component.translatable("gtceu.multiblock.turbine.efficiency",
+                        rotorHolder.getTotalEfficiency()));
+
+                int rotorDurability = rotorHolder.getRotorDurabilityPercent();
+                var duraText = Component.translatable("gtceu.multiblock.turbine.rotor_durability", rotorDurability);
+                textList.add((rotorDurability > MIN_DURABILITY_TO_WARN) ?
+                        duraText :
+                        duraText.setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
+            }
+        }
+    }
+
+    public void handleDisplayClick(String componentData, ClickData clickData){
+        if (!clickData.isRemote){
+            switch (componentData) {
+                case "add":
+                    this.controlRods = Mth.clamp(controlRods + 5, 0, 100);
+                    break;
+                case "sub":
+                    this.controlRods = Mth.clamp(controlRods - 5, 0, 100);
+                    break;
+                case "scram":
+                    this.setWorkingEnabled(false);
+                    maintenance.setMaintenanceProblems(IMaintenanceMachine.ALL_PROBLEMS);
+                    recipeLogic.interruptRecipe();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}

@@ -21,6 +21,11 @@ public interface IModeratorType {
     int getMaxTemp();
 
     /**
+     * @return The heat capacity of the moderator
+     */
+    int getHeatCapacity();
+
+    /**
      * @return The {@link ResourceLocation} with the base texture of the moderator block
      */
     ResourceLocation getTexture();

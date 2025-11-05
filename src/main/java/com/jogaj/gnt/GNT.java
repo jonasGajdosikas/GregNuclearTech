@@ -9,6 +9,8 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 
+import com.jogaj.gnt.common.data.GNTDatagen;
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
@@ -31,7 +33,9 @@ public class GNT {
     public static GTRegistrate REGISTRATE = GTRegistrate.create(GNT.MOD_ID);
 
     public GNT() {
+        GNT.init();
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.register(this);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::clientSetup);
@@ -50,6 +54,11 @@ public class GNT {
         MinecraftForge.EVENT_BUS.register(this);
 
         REGISTRATE.registerRegistrate();
+    }
+
+    public static void init(){
+        LOGGER.info("running gnt init");
+        GNTDatagen.init();
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

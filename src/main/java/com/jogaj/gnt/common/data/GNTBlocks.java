@@ -1,6 +1,5 @@
 package com.jogaj.gnt.common.data;
 
-import com.gregtechceu.gtceu.api.block.ICoilType;
 import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 import com.jogaj.gnt.api.GNTAPI;
 import com.jogaj.gnt.api.block.IModeratorType;
