@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "gnt:block/radiation_proof_casing"
+    }
+  }
+}

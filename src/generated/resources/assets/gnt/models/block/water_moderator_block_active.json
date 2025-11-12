@@ -1,0 +1,7 @@
+{
+  "parent": "gnt:block/cube_2_layer/all",
+  "textures": {
+    "bot_all": "gnt:block/casing/moderator/water",
+    "top_all": "gnt:block/casing/moderator/water_bloom"
+  }
+}

@@ -6,7 +6,6 @@ import com.jogaj.gnt.GNT;
 import com.jogaj.gnt.api.block.IModeratorType;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
@@ -33,23 +32,25 @@ public class ModeratorBlock extends ActiveBlock {
 
     // Make the block render like glass
     // disable inner faces, make it transparent to sky light
-    @Override
+    @Override @ParametersAreNonnullByDefault
     public @NotNull VoxelShape getVisualShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context) {
         return Shapes.empty();
     }
 
+    @ParametersAreNonnullByDefault
     public @Override float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
         return 1.0F;
     }
 
+    @ParametersAreNonnullByDefault
     public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
         return true;
     }
 
-    @Override
-    public boolean skipRendering(BlockState state, BlockState adjacentBlockState, Direction side) {
-        return adjacentBlockState.is(this) || super.skipRendering(state, adjacentBlockState, side);
-    }
+//    @Override
+//    public boolean skipRendering(BlockState state, BlockState adjacentBlockState, Direction side) {
+//        return adjacentBlockState.is(this) || super.skipRendering(state, adjacentBlockState, side);
+//    }
 
     @Override
     @ParametersAreNonnullByDefault

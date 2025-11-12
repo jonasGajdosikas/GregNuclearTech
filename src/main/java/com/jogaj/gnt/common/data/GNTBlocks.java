@@ -29,7 +29,7 @@ public class GNTBlocks {
 
 
     public static final BlockEntry<Block> RADIATION_PROOF_CASING
-            = createCasingBlock("Radiation_proof_casing",
+            = createCasingBlock("radiation_proof_casing",
             GNT.resourceLocation("block/casing/machine/radiation_proof"));
 
 

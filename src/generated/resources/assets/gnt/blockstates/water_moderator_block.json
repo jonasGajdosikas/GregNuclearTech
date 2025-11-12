@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "gnt:block/water_moderator_block"
+    },
+    "active=true": {
+      "model": "gnt:block/water_moderator_block_active"
+    }
+  }
+}
