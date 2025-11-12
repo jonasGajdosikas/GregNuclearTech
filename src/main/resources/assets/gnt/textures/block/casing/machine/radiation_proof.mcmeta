@@ -1,0 +1,5 @@
+{
+    "ldlib": {
+        "connection": "gnt:block/casing/machine/radiation_proof_ctm"
+    }
+}

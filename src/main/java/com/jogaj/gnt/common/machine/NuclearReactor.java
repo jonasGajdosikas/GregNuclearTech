@@ -154,12 +154,9 @@ public class NuclearReactor extends WorkableMultiblockMachine implements IExplos
     }
 
 
-    //////////////////////////////////////
-    // ********* Recipe Logic ********* //
-    //////////////////////////////////////
 
-
-
+    //region Recipe Logic
+    //region Heat Management
     public @Override void onStructureFormed(){
         super.onStructureFormed();
         var type = getMultiblockState().getMatchContext().get("ModeratorType");
@@ -283,6 +280,35 @@ public class NuclearReactor extends WorkableMultiblockMachine implements IExplos
         return recipe.data.contains(key) ? recipe.data.getInt(key) : 0;
     }
 
+    protected int getHeatDissipation(){
+        return 1;
+    }
+    private double ctrlRodMultiplier(){
+        return 1.0 - (controlRods / 125.0);
+    }
+
+    /**
+     * Recipe Modifier for <b>Nuclear Reactors</b> - can be used as a valid {@link RecipeModifier}
+     * <p>
+     *     Duration is multiplied with {@code (1- controlRods/125)^-.95} if control rods are inserted more than 0
+     * </p>
+     *
+     * @param machine a {@link NuclearReactor}
+     * @param recipe recipe
+     * @return A {@link ModifierFunction} for the given reactor and recipe
+     */
+    public static ModifierFunction ctrlRodModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe){
+        if (!(machine instanceof NuclearReactor reactor)) return RecipeModifier.nullWrongType(NuclearReactor.class, machine);
+        if (reactor.controlRods == 0) return ModifierFunction.IDENTITY;
+        return ModifierFunction.builder()
+                .durationMultiplier(Math.pow(reactor.ctrlRodMultiplier(), -0.95))
+                .build();
+    }
+
+    //endregion
+
+    //region Power Generation
+
     protected void generateEnergyFromHeatTick(){
         if (Objects.requireNonNull(getLevel()).isClientSide) return;
         if (getOffsetTimer() % 20 == 0){
@@ -343,30 +369,8 @@ public class NuclearReactor extends WorkableMultiblockMachine implements IExplos
 
      */
 
-    protected int getHeatDissipation(){
-        return 1;
-    }
-    private double ctrlRodMultiplier(){
-        return 1.0 - (controlRods / 125.0);
-    }
-
-    /**
-     * Recipe Modifier for <b>Nuclear Reactors</b> - can be used as a valid {@link RecipeModifier}
-     * <p>
-     *     Duration is multiplied with {@code (1- controlRods/125)^-.95} if control rods are inserted more than 0
-     * </p>
-     *
-     * @param machine a {@link NuclearReactor}
-     * @param recipe recipe
-     * @return A {@link ModifierFunction} for the given reactor and recipe
-     */
-    public static ModifierFunction ctrlRodModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe){
-        if (!(machine instanceof NuclearReactor reactor)) return RecipeModifier.nullWrongType(NuclearReactor.class, machine);
-        if (reactor.controlRods == 0) return ModifierFunction.IDENTITY;
-        return ModifierFunction.builder()
-                .durationMultiplier(Math.pow(reactor.ctrlRodMultiplier(), -0.95))
-                .build();
-    }
+    //endregion
+    //endregion
 
     public void addDisplayText(@NotNull List<Component> textList){
         IDisplayUIMachine.super.addDisplayText(textList);

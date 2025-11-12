@@ -5,6 +5,7 @@ import com.gregtechceu.gtceu.api.addon.IGTAddon;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 
 import com.jogaj.gnt.common.data.GNTBlocks;
+import com.jogaj.gnt.common.registry.GNTRegistration;
 import net.minecraft.data.recipes.FinishedRecipe;
 
 import java.util.function.Consumer;
@@ -15,7 +16,7 @@ public class GNTAddon implements IGTAddon {
 
     @Override
     public GTRegistrate getRegistrate() {
-        return GNT.REGISTRATE;
+        return GNTRegistration.REGISTRATE;
     }
 
     @Override

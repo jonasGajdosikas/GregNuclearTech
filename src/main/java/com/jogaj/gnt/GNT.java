@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 
 import com.jogaj.gnt.common.data.GNTDatagen;
+import com.jogaj.gnt.common.registry.GNTRegistration;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -30,7 +31,6 @@ public class GNT {
 
     public static final String MOD_ID = "gnt", NAME = "GregNukeTech";
     public static final Logger LOGGER = LogManager.getLogger();
-    public static GTRegistrate REGISTRATE = GTRegistrate.create(GNT.MOD_ID);
 
     public GNT() {
         GNT.init();
@@ -53,7 +53,7 @@ public class GNT {
         // we need to register our object like this!
         MinecraftForge.EVENT_BUS.register(this);
 
-        REGISTRATE.registerRegistrate();
+        GNTRegistration.REGISTRATE.registerRegistrate();
     }
 
     public static void init(){
