@@ -6,12 +6,10 @@ import com.gregtechceu.gtceu.api.data.chemical.material.event.MaterialRegistryEv
 import com.gregtechceu.gtceu.api.data.chemical.material.event.PostMaterialEvent;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
-import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 
 import com.jogaj.gnt.common.data.GNTDatagen;
 import com.jogaj.gnt.common.registry.GNTRegistration;
-import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
@@ -75,7 +73,7 @@ public class GNT {
     /**
      * Create a ResourceLocation in the format "modid:path"
      *
-     * @param path
+     * @param path the resourceLocation
      * @return ResourceLocation with the namespace of your mod
      */
     public static ResourceLocation resourceLocation(String path) {
@@ -87,7 +85,7 @@ public class GNT {
      * You MUST have this if you have custom materials.
      * Remember to register them not to GT's namespace, but your own.
      * 
-     * @param event
+     * @param event event
      */
     private void addMaterialRegistries(MaterialRegistryEvent event) {
         GTCEuAPI.materialManager.createRegistry(GNT.MOD_ID);
@@ -97,7 +95,7 @@ public class GNT {
      * You will also need this for registering custom materials
      * Call init() from your Material class(es) here
      * 
-     * @param event
+     * @param event event
      */
     private void addMaterials(MaterialEvent event) {
         // CustomMaterials.init();
@@ -106,7 +104,7 @@ public class GNT {
     /**
      * (Optional) Used to modify pre-existing materials from GregTech
      * 
-     * @param event
+     * @param event event
      */
     private void modifyMaterials(PostMaterialEvent event) {
         // CustomMaterials.modify();
@@ -116,7 +114,7 @@ public class GNT {
      * Used to register your own new RecipeTypes.
      * Call init() from your RecipeType class(es) here
      * 
-     * @param event
+     * @param event event
      */
     private void registerRecipeTypes(GTCEuAPI.RegisterEvent<ResourceLocation, GTRecipeType> event) {
         // CustomRecipeTypes.init();
@@ -126,7 +124,7 @@ public class GNT {
      * Used to register your own new machines.
      * Call init() from your Machine class(es) here
      * 
-     * @param event
+     * @param event event
      */
     private void registerMachines(GTCEuAPI.RegisterEvent<ResourceLocation, MachineDefinition> event) {
         // CustomMachines.init();
@@ -136,7 +134,7 @@ public class GNT {
      * Used to register your own new sounds
      * Call init from your Sound class(es) here
      * 
-     * @param event
+     * @param event event
      */
     public void registerSounds(GTCEuAPI.RegisterEvent<ResourceLocation, SoundEntry> event) {
         // CustomSounds.init();

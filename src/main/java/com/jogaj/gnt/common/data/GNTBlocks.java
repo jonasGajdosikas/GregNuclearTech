@@ -35,6 +35,7 @@ public class GNTBlocks {
 
 
 
+    @SuppressWarnings("SameParameterValue")
     private static BlockEntry<ModeratorBlock> createModeratorBlock(IModeratorType moderatorType){
         var moderatorBlock = REGISTRATE
                 .block("%s_moderator_block".formatted(moderatorType.getName()), p -> new ModeratorBlock(p, moderatorType))
