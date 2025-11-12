@@ -8,8 +8,6 @@ import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 
-import com.jogaj.gnt.common.data.GNTDatagen;
-import com.jogaj.gnt.common.registry.GNTRegistration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
@@ -20,6 +18,8 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
+import com.jogaj.gnt.common.data.GNTDatagen;
+import com.jogaj.gnt.common.registry.GNTRegistration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,7 +54,7 @@ public class GNT {
         GNTRegistration.REGISTRATE.registerRegistrate();
     }
 
-    public static void init(){
+    public static void init() {
         LOGGER.info("running gnt init");
         GNTDatagen.init();
     }

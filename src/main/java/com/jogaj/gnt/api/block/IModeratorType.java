@@ -1,18 +1,20 @@
 package com.jogaj.gnt.api.block;
 
 import net.minecraft.resources.ResourceLocation;
+
 import org.jetbrains.annotations.NotNull;
 
 public interface IModeratorType {
+
     /**
-    * @return The unique name of the moderator block
-    * */
+     * @return The unique name of the moderator block
+     */
     @NotNull
     String getName();
 
     /**
      * @return The factor of fast to thermal neutron conversion
-     * */
+     */
     double getFastNeutronConversion();
 
     /**

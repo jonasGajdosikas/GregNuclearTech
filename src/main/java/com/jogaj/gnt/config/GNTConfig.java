@@ -9,15 +9,18 @@ import dev.toma.configuration.config.format.ConfigFormats;
 
 @dev.toma.configuration.config.Config(id = GNT.MOD_ID)
 public class GNTConfig {
+
     public static GNTConfig INSTANCE;
     public static ConfigHolder<GNTConfig> CONFIG_HOLDER;
-    public static void init(){
+
+    public static void init() {
         CONFIG_HOLDER = Configuration.registerConfig(GNTConfig.class, ConfigFormats.yaml());
     }
 
-    @Configurable public ValueConfigs values = new ValueConfigs();
+    @Configurable
+    public ValueConfigs values = new ValueConfigs();
 
-    public static class ValueConfigs{
+    public static class ValueConfigs {
 
     }
 }

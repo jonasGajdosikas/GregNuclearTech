@@ -5,7 +5,8 @@ import com.jogaj.gnt.common.registry.GNTRegistration;
 import com.tterrag.registrate.providers.ProviderType;
 
 public class GNTDatagen {
-    public static void init(){
+
+    public static void init() {
         GNTRegistration.REGISTRATE.addDataGenerator(ProviderType.LANG, LangHandler::init);
     }
 }
