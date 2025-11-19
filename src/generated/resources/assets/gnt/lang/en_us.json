@@ -4,6 +4,7 @@
   "gnt.block.moderator.tooltip_conversion": "Converts %s%% of fast neutrons into thermal neutrons",
   "gnt.block.moderator.tooltip_extended_info": "§7Hold SHIFT to show Moderator Bonus Info",
   "gnt.block.moderator.tooltip_max_temp": "Maximum safe temperature %s",
+  "gnt.multiblock.pattern.error.moderator": "§cAll moderators must be the same§r",
   "gnt.multiblock.reactor.heat": "Heat %sK / %sK",
   "gnt.multiblock.reactor.powergen": "Potential power generation %s EU",
   "gnt.multiblock.reactor.rods": "Rods are %s in",

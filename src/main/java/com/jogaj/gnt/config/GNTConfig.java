@@ -7,7 +7,7 @@ import dev.toma.configuration.config.ConfigHolder;
 import dev.toma.configuration.config.Configurable;
 import dev.toma.configuration.config.format.ConfigFormats;
 
-@dev.toma.configuration.config.Config(id = GNT.MOD_ID)
+@Config(id = GNT.MOD_ID)
 public class GNTConfig {
 
     public static GNTConfig INSTANCE;
@@ -21,6 +21,7 @@ public class GNTConfig {
     public ValueConfigs values = new ValueConfigs();
 
     public static class ValueConfigs {
-
+        @Configurable.Comment("If the fission reactor should scram automatically when reaching critical heat")
+        public @Configurable boolean scramBeforeOverheat = false;
     }
 }

@@ -15,6 +15,8 @@ public class LangHandler extends com.gregtechceu.gtceu.data.lang.LangHandler {
         replace(provider, "gnt.multiblock.reactor.rods_modify", "Change control rode height");
         replace(provider, "gnt.multiblock.reactor.scram", "[SCRAM]");
 
+        replace(provider, "gnt.multiblock.pattern.error.moderator", "§cAll moderators must be the same§r");
+
         replace(provider, "gnt.block.moderator.tooltip_extended_info", "§7Hold SHIFT to show Moderator Bonus Info");
         replace(provider, "gnt.block.moderator.tooltip_conversion",
                 "Converts %s%% of fast neutrons into thermal neutrons");
