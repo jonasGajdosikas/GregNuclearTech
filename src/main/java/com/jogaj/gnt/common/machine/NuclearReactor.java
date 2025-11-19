@@ -24,7 +24,6 @@ import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
-import com.jogaj.gnt.config.GNTConfig;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
@@ -41,6 +40,7 @@ import net.minecraft.util.Mth;
 
 import com.jogaj.gnt.api.block.IModeratorType;
 import com.jogaj.gnt.common.block.ModeratorBlock;
+import com.jogaj.gnt.config.GNTConfig;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import lombok.Getter;
@@ -247,39 +247,39 @@ public class NuclearReactor extends WorkableMultiblockMachine
         if (isFormed() && getOffsetTimer() % TICKS_PER_HEAT_UPDATE == 0) {
             var maxWaterDrain = (int) temp * TICKS_PER_HEAT_UPDATE /
                     (ConfigHolder.INSTANCE.machines.largeBoilers.steamPerWater);
-//            if (temp < BOILING_TEMP) {
-//                steamAvailablePerTick = 0;
-//            } else {
-//                var drainWater = List.of(FluidIngredient.of(Fluids.WATER, maxWaterDrain));
-//                List<IRecipeHandler<?>> inputTanks = new ArrayList<>();
-//                inputTanks.addAll(getCapabilitiesFlat(IO.IN, FluidRecipeCapability.CAP));
-//                inputTanks.addAll(getCapabilitiesFlat(IO.BOTH, FluidRecipeCapability.CAP));
-//
-//                for (IRecipeHandler<?> tank : inputTanks) {
-//                    // noinspection unchecked
-//                    drainWater = (List<FluidIngredient>) tank.handleRecipe(IO.IN, null, drainWater, false);
-//                    if (drainWater == null || drainWater.isEmpty()) break;
-//                }
-//                var drained = (drainWater == null || drainWater.isEmpty()) ? maxWaterDrain :
-//                        maxWaterDrain - drainWater.get(0).getAmount();
-//
-//                if (drained > 0)
-//                    steamAvailablePerTick = (long) drained * ConfigHolder.INSTANCE.machines.largeBoilers.steamPerWater;
-                if (temp > moderatorType.getMaxTemp()) {
-                    if (GNTConfig.INSTANCE.values.scramBeforeOverheat){
-                        scram();
-                    }
-                    int overheat = moderatorType.getMaxTemp() - (int) temp +
-                            maintenance.getNumMaintenanceProblems() * 10 - GTValues.RNG.nextInt(100);
-                    if (overheat > 100) {
-                        goVacNuke(overheat / 2f);
-                    }
-                    if (overheat > 0) {
-                        byte problem = (byte) (0b1 << GTValues.RNG.nextInt(6));
-                        maintenance.setMaintenanceProblems(problem);
-                    }
+            // if (temp < BOILING_TEMP) {
+            // steamAvailablePerTick = 0;
+            // } else {
+            // var drainWater = List.of(FluidIngredient.of(Fluids.WATER, maxWaterDrain));
+            // List<IRecipeHandler<?>> inputTanks = new ArrayList<>();
+            // inputTanks.addAll(getCapabilitiesFlat(IO.IN, FluidRecipeCapability.CAP));
+            // inputTanks.addAll(getCapabilitiesFlat(IO.BOTH, FluidRecipeCapability.CAP));
+            //
+            // for (IRecipeHandler<?> tank : inputTanks) {
+            // // noinspection unchecked
+            // drainWater = (List<FluidIngredient>) tank.handleRecipe(IO.IN, null, drainWater, false);
+            // if (drainWater == null || drainWater.isEmpty()) break;
+            // }
+            // var drained = (drainWater == null || drainWater.isEmpty()) ? maxWaterDrain :
+            // maxWaterDrain - drainWater.get(0).getAmount();
+            //
+            // if (drained > 0)
+            // steamAvailablePerTick = (long) drained * ConfigHolder.INSTANCE.machines.largeBoilers.steamPerWater;
+            if (temp > moderatorType.getMaxTemp()) {
+                if (GNTConfig.INSTANCE.values.scramBeforeOverheat) {
+                    scram();
                 }
-//            }
+                int overheat = moderatorType.getMaxTemp() - (int) temp +
+                        maintenance.getNumMaintenanceProblems() * 10 - GTValues.RNG.nextInt(100);
+                if (overheat > 100) {
+                    goVacNuke(overheat / 2f);
+                }
+                if (overheat > 0) {
+                    byte problem = (byte) (0b1 << GTValues.RNG.nextInt(6));
+                    maintenance.setMaintenanceProblems(problem);
+                }
+            }
+            // }
         }
     }
 
@@ -358,9 +358,6 @@ public class NuclearReactor extends WorkableMultiblockMachine
         // making heat energy nonlinear to incentivize use as baseline power
         var maxTempEnergy = .169256 * Math.pow(getTemp() - BOILING_TEMP, 2);
         var availableHeatEnergy = Math.min(getHeat() * 0.2, maxTempEnergy) * holderEfficiency;
-
-
-
 
         return 0;
     }

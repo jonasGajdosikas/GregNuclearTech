@@ -21,6 +21,7 @@ public class GNTConfig {
     public ValueConfigs values = new ValueConfigs();
 
     public static class ValueConfigs {
+
         @Configurable.Comment("If the fission reactor should scram automatically when reaching critical heat")
         public @Configurable boolean scramBeforeOverheat = false;
     }

@@ -47,5 +47,4 @@ GTCEuStartupEvents.registry('gtceu:machine', event => {
         GTCEu.id("block/multiblock/implosion_compressor"))
             ["andThen(java.util.function.Consumer)"](b => b.addDynamicRenderer(() => GNTDynamicRenderHelper.makeReactorTurbineRender(GNTBlocks.RADIATION_PROOF_CASING,GTBlocks.CASING_TITANIUM_TURBINE)))
         )
-    )
 })
