@@ -13,7 +13,7 @@ public class GNTRecipeSchema {
     @Accessors(chain = true, fluent = true)
     class GNTRecipeJs extends GTRecipeSchema.GTRecipeJS {
 
-        public GTRecipeSchema.GTRecipeJS thermlaNeutrons(int n) {
+        public GTRecipeSchema.GTRecipeJS thermalNeutrons(int n) {
             this.addData("thermalNeutrons", n);
             return this;
         }

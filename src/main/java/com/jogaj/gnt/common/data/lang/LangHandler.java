@@ -12,7 +12,7 @@ public class LangHandler extends com.gregtechceu.gtceu.data.lang.LangHandler {
         replace(provider, "gnt.multiblock.reactor.powergen", "Potential power generation %s EU");
         replace(provider, "gnt.multiblock.reactor.rods", "Rods are %s in");
         replace(provider, "gnt.multiblock.reactor.rods.tooltip", "Insert control rods deeper to slow down the fission");
-        replace(provider, "gnt.multiblock.reactor.rods_modify", "Change control rode height");
+        replace(provider, "gnt.multiblock.reactor.rods_modify", "Change control rod depth");
         replace(provider, "gnt.multiblock.reactor.scram", "[SCRAM]");
 
         replace(provider, "gnt.multiblock.pattern.error.moderator", "§cAll moderators must be the same§r");
