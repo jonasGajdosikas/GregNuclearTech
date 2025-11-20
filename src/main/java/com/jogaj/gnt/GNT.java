@@ -13,11 +13,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
+import com.jogaj.gnt.client.ClientProxy;
+import com.jogaj.gnt.common.CommonProxy;
 import com.jogaj.gnt.common.data.GNTDatagen;
 import com.jogaj.gnt.common.registry.GNTRegistration;
 import org.apache.logging.log4j.LogManager;
@@ -52,6 +55,8 @@ public class GNT {
         MinecraftForge.EVENT_BUS.register(this);
 
         GNTRegistration.REGISTRATE.registerRegistrate();
+
+        DistExecutor.unsafeRunForDist(() -> ClientProxy::new, () -> CommonProxy::new);
     }
 
     public static void init() {
