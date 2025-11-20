@@ -1,8 +1,15 @@
 ServerEvents.recipes(event => {
-    event.recipes.gtceu.fission_reactor('test_fission')
+    event.recipes.gtceu.fission_reactor('test_fission/uranium')
         .itemInputs("gtceu:uranium_235_dust")
         .itemOutputs("gtceu:lead_dust")
         .addData("thermalNeutrons", 6)
         .addData("fastNeutrons", 4)
         .duration(5*60*20)
+
+    event.recipes.gtceu.fission_reactor('test_fission/naq')
+        .itemInputs("gtceu:naquadria_dust")
+        .itemOutputs("gtceu:enriched_naquadah_dust")
+        .addData("thermalNeutrons", 8)
+        .addData("fastNeutrons", 10)
+        .duration(6*60*20)
 })

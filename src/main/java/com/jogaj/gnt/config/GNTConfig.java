@@ -3,7 +3,6 @@ package com.jogaj.gnt.config;
 import com.jogaj.gnt.GNT;
 import dev.toma.configuration.Configuration;
 import dev.toma.configuration.config.Config;
-import dev.toma.configuration.config.ConfigHolder;
 import dev.toma.configuration.config.Configurable;
 import dev.toma.configuration.config.format.ConfigFormats;
 
@@ -11,16 +10,19 @@ import dev.toma.configuration.config.format.ConfigFormats;
 public class GNTConfig {
 
     public static GNTConfig INSTANCE;
-    public static ConfigHolder<GNTConfig> CONFIG_HOLDER;
+    private static final Object LOCK = new Object();
 
     public static void init() {
-        CONFIG_HOLDER = Configuration.registerConfig(GNTConfig.class, ConfigFormats.yaml());
+        synchronized (LOCK){
+            if(INSTANCE == null)
+                INSTANCE = Configuration.registerConfig(GNTConfig.class, ConfigFormats.yaml()).getConfigInstance();
+        }
     }
 
     @Configurable
-    public ValueConfigs values = new ValueConfigs();
+    public FissionConfigs values = new FissionConfigs();
 
-    public static class ValueConfigs {
+    public static class FissionConfigs {
 
         @Configurable.Comment("If the fission reactor should scram automatically when reaching critical heat")
         public @Configurable boolean scramBeforeOverheat = false;

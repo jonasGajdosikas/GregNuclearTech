@@ -9,6 +9,6 @@
   "gnt.multiblock.reactor.powergen": "Potential power generation %s EU",
   "gnt.multiblock.reactor.rods": "Rods are %s in",
   "gnt.multiblock.reactor.rods.tooltip": "Insert control rods deeper to slow down the fission",
-  "gnt.multiblock.reactor.rods_modify": "Change control rode height",
+  "gnt.multiblock.reactor.rods_modify": "Change depth",
   "gnt.multiblock.reactor.scram": "[SCRAM]"
 }

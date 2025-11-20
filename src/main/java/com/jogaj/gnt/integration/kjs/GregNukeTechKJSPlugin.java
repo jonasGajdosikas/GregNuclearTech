@@ -1,5 +1,10 @@
 package com.jogaj.gnt.integration.kjs;
 
+import com.jogaj.gnt.GNT;
+import com.jogaj.gnt.api.pattern.Predicates;
+import com.jogaj.gnt.client.renderer.machine.DynamicRenderHelper;
+import com.jogaj.gnt.common.data.GNTBlocks;
+import com.jogaj.gnt.common.data.GNTRecipeModifiers;
 import com.jogaj.gnt.common.machine.NuclearReactor;
 import com.jogaj.gnt.integration.kjs.builders.block.ModeratorBlockBuilder;
 import dev.latvian.mods.kubejs.KubeJSPlugin;
@@ -33,6 +38,13 @@ public class GregNukeTechKJSPlugin extends KubeJSPlugin {
 
     public @Override void registerBindings(BindingsEvent event) {
         super.registerBindings(event);
+        event.add("GNT", GNT.class);
+        event.add("GNTPredicates", Predicates.class);
+        event.add("GNTBlocks", GNTBlocks.class);
+        event.add("GNTModifiers", GNTRecipeModifiers.class);
+        event.add("GNTDynamicRenderHelper", DynamicRenderHelper.class);
+
+
 
         event.add("Reactor", NuclearReactor.class);
     }

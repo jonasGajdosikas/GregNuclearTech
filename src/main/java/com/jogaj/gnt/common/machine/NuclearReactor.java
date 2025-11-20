@@ -24,6 +24,7 @@ import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
+import com.jogaj.gnt.GNT;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
@@ -46,6 +47,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -240,7 +243,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
                     addHeat(TICKS_PER_HEAT_UPDATE * ctrlRodMultiplier() * recipeHeat);
                 }
             } else if (temp > 0) {
-                addHeat(getHeatDissipation());
+                addHeat(-getHeatDissipation());
             }
         }
 
@@ -271,6 +274,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
                 }
                 int overheat = moderatorType.getMaxTemp() - (int) temp +
                         maintenance.getNumMaintenanceProblems() * 10 - GTValues.RNG.nextInt(100);
+                GNT.LOGGER.info("overheating by {}", overheat);
                 if (overheat > 100) {
                     goVacNuke(overheat / 2f);
                 }
@@ -281,6 +285,20 @@ public class NuclearReactor extends WorkableMultiblockMachine
             }
             // }
         }
+        updateRadiationHeatSubscription();
+    }
+
+    @Override
+    public boolean onWorking() {
+        boolean value = super.onWorking();
+        if (getTemp() < moderatorType.getMaxTemp()){
+            if (getTemp() < 1)
+                addHeat(moderatorType.getHeatCapacity());
+            updateRadiationHeatSubscription();
+        }
+
+
+        return value;
     }
 
     void goVacNuke(float power) {
@@ -301,7 +319,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
     }
 
     protected double getHeatDissipation() {
-        return getTemp() * .01 - .1;
+        return getTemp() * .011 + 1;
     }
 
     private double ctrlRodMultiplier() {
@@ -399,7 +417,8 @@ public class NuclearReactor extends WorkableMultiblockMachine
     public void addDisplayText(@NotNull List<Component> textList) {
         IDisplayUIMachine.super.addDisplayText(textList);
         if (isFormed()) {
-            textList.add(Component.translatable("gnt.multiblock.reactor.heat", temp, moderatorType.getMaxTemp()));
+            NumberFormat formatter = new DecimalFormat("#0.0");
+            textList.add(Component.translatable("gnt.multiblock.reactor.heat", formatter.format(temp), moderatorType.getMaxTemp()));
             textList.add(Component.translatable("gnt.multiblock.reactor.powergen"));
 
             var ctrlRodText = Component.translatable("gnt.multiblock.reactor.rods",
