@@ -8,19 +8,19 @@ import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 
+import com.lowdragmc.lowdraglib.Platform;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import com.jogaj.gnt.client.ClientProxy;
-import com.jogaj.gnt.common.CommonProxy;
 import com.jogaj.gnt.common.data.GNTDatagen;
 import com.jogaj.gnt.common.registry.GNTRegistration;
 import org.apache.logging.log4j.LogManager;
@@ -56,7 +56,9 @@ public class GNT {
 
         GNTRegistration.REGISTRATE.registerRegistrate();
 
-        DistExecutor.unsafeRunForDist(() -> ClientProxy::new, () -> CommonProxy::new);
+        if (Platform.isClient()) {
+            ClientProxy.init(modEventBus);
+        }
     }
 
     public static void init() {

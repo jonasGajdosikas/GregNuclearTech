@@ -17,7 +17,7 @@ const $NuclearReactor = Java.loadClass("com.jogaj.gnt.common.machine.NuclearReac
 
 GTCEuStartupEvents.registry('gtceu:machine', event => {
     event.create('small_fission_reactor', 'multiblock')
-        .machine((holder) => new $NuclearReactor(holder, ))
+        .machine((holder) => new $NuclearReactor(holder, 7))
         .rotationState(RotationState.NON_Y_AXIS)
         .recipeType('fission_reactor')
         .appearanceBlock(GNTBlocks.RADIATION_PROOF_CASING)
@@ -33,18 +33,19 @@ GTCEuStartupEvents.registry('gtceu:machine', event => {
                 .or(Predicates.abilities(PartAbility.MAINTENANCE).setExactLimit(1)))
             .where("T", Predicates.blocks(GTBlocks.CASING_TITANIUM_TURBINE.get()))
             .where("W", Predicates.blocks(GNTBlocks.RADIATION_PROOF_CASING)
-                .or(GTMachines.RESERVOIR_HATCH))
+                .or(Predicates.blocks(GTMachines.RESERVOIR_HATCH)))
             .where("G", Predicates.blocks(GTBlocks.CASING_TITANIUM_GEARBOX.get()))
             .where("D", Predicates.abilities(PartAbility.OUTPUT_ENERGY).setExactLimit(1)
                 .or(NPredicates.rotorHolderPredicate()))
             .where("M", NPredicates.moderators())
             .where("R", Predicates.blocks(GTBlocks.HERMETIC_CASING_IV.get()))
+            .where("P", Predicates.blocks(GTBlocks.CASING_TUNGSTENSTEEL_PIPE))
             .where("#", Predicates.any())
             .build()
         )
         .model(GTMachineModels.createWorkableCasingMachineModel(
-        GNT.resourceLocation("block/casing/machine/radiation_proof"),
-        GTCEu.id("block/multiblock/implosion_compressor"))
-            ["andThen(java.util.function.Consumer)"](b => b.addDynamicRenderer(() => GNTDynamicRenderHelper.makeReactorTurbineRender(GNTBlocks.RADIATION_PROOF_CASING,GTBlocks.CASING_TITANIUM_TURBINE)))
+            GNT.resourceLocation("block/casing/machine/radiation_proof"),
+            GTCEu.id("block/multiblock/implosion_compressor"))
+                ["andThen(java.util.function.Consumer)"](b => b.addDynamicRenderer(() => GNTDynamicRenderHelper.makeReactorTurbineRender(GNTBlocks.RADIATION_PROOF_CASING,GTBlocks.CASING_TITANIUM_TURBINE)))
         )
 })
