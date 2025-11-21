@@ -10,6 +10,6 @@ ServerEvents.recipes(event => {
         .itemInputs("gtceu:naquadria_dust")
         .itemOutputs("gtceu:enriched_naquadah_dust")
         .addData("thermalNeutrons", 8)
-        .addData("fastNeutrons", 10)
+        .addData("fastNeutrons", 12)
         .duration(6*60*20)
 })

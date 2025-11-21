@@ -51,7 +51,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -68,8 +67,8 @@ public class NuclearReactor extends WorkableMultiblockMachine
     @Persisted
     @Getter
     private int controlRods;
-    @Persisted
     @Getter
+    @Persisted
     private double temp;
 
     private double getHeat() {
@@ -204,6 +203,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
             }
         }
         outputHatches = new EnergyContainerList(outputs);
+        //GNT.LOGGER.info("{} outputs in outputHatches", outputs.size());
     }
 
     public @Override void onStructureInvalid() {
@@ -243,7 +243,8 @@ public class NuclearReactor extends WorkableMultiblockMachine
                     addHeat(TICKS_PER_HEAT_UPDATE * ctrlRodMultiplier() * recipeHeat);
                 }
             } else if (temp > 0) {
-                addHeat(-getHeatDissipation());
+                // it reduces heat 9 ticks out of 10
+                addHeat(-getHeatDissipation() * 10.0 / 9.0);
             }
         }
 
@@ -350,7 +351,8 @@ public class NuclearReactor extends WorkableMultiblockMachine
     // region Power Generation
 
     protected void generateEnergyFromHeatTick() {
-        if (Objects.requireNonNull(getLevel()).isClientSide) return;
+        //noinspection DataFlowIssue
+        if (getLevel().isClientSide) return;
         if (getOffsetTimer() % 20 == 0) {
             outputPerSec = netEnergyGeneratedLastSec;
             netEnergyGeneratedLastSec = 0;
