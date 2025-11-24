@@ -8,7 +8,6 @@ import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.sound.SoundEntry;
 
-import com.jogaj.gnt.config.GNTConfig;
 import com.lowdragmc.lowdraglib.Platform;
 
 import net.minecraft.resources.ResourceLocation;
@@ -22,6 +21,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import com.jogaj.gnt.client.ClientProxy;
 import com.jogaj.gnt.common.data.GNTDatagen;
 import com.jogaj.gnt.common.registry.GNTRegistration;
+import com.jogaj.gnt.config.GNTConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -67,13 +67,10 @@ public class GNT {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(() -> {
-        });
+        event.enqueueWork(() -> {});
     }
 
-    private void clientSetup(final FMLClientSetupEvent event) {
-
-    }
+    private void clientSetup(final FMLClientSetupEvent event) {}
 
     /**
      * Create a ResourceLocation in the format "modid:path"

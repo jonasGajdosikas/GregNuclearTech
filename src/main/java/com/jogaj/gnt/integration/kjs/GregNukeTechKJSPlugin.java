@@ -44,8 +44,6 @@ public class GregNukeTechKJSPlugin extends KubeJSPlugin {
         event.add("GNTModifiers", GNTRecipeModifiers.class);
         event.add("GNTDynamicRenderHelper", DynamicRenderHelper.class);
 
-
-
         event.add("Reactor", NuclearReactor.class);
     }
 }

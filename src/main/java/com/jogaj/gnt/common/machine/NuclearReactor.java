@@ -23,7 +23,6 @@ import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
-import com.jogaj.gnt.GNT;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
@@ -38,6 +37,7 @@ import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 
+import com.jogaj.gnt.GNT;
 import com.jogaj.gnt.api.block.IModeratorType;
 import com.jogaj.gnt.common.block.ModeratorBlock;
 import com.jogaj.gnt.config.GNTConfig;
@@ -95,7 +95,8 @@ public class NuclearReactor extends WorkableMultiblockMachine
     public NuclearReactor(IMachineBlockEntity holder, int tier,
                           Object... args) {
         super(holder, args);
-        this.tickSubscribtion = new ConditionalSubscriptionHandler(this, this::generateEnergyFromHeatTick, this::isFormed);
+        this.tickSubscribtion = new ConditionalSubscriptionHandler(this, this::generateEnergyFromHeatTick,
+                this::isFormed);
         this.BASE_EU_OUTPUT = GTValues.V[tier] * 2;
         this.controlRods = 0;
     }
@@ -157,7 +158,6 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
     // endregion
 
-
     // region Recipe Logic
     // region Heat Management
     public @Override void onStructureFormed() {
@@ -185,10 +185,11 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
                 if (handlerList.getHandlerIO().support(IO.OUT))
                     outputs.addAll(containers);
-                traitSubscriptions.add(handlerList.subscribe(tickSubscribtion::updateSubscription, EURecipeCapability.CAP));
+                traitSubscriptions
+                        .add(handlerList.subscribe(tickSubscribtion::updateSubscription, EURecipeCapability.CAP));
             }
         }
-        GNT.LOGGER.info("{} outputs on reactor",outputs.size());
+        // GNT.LOGGER.info("{} outputs on reactor",outputs.size());
         outputHatches = new EnergyContainerList(outputs);
     }
 
@@ -280,12 +281,11 @@ public class NuclearReactor extends WorkableMultiblockMachine
     @Override
     public boolean onWorking() {
         boolean value = super.onWorking();
-        if (getTemp() < moderatorType.getMaxTemp()){
+        if (getTemp() < moderatorType.getMaxTemp()) {
             if (getTemp() < 1)
                 addHeat(moderatorType.getHeatCapacity());
             updateRadiationHeatSubscription();
         }
-
 
         return value;
     }
@@ -341,7 +341,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
     protected void generateEnergyFromHeatTick() {
         GNT.LOGGER.info("hello from generateEnergyFromHeatTick");
-        //noinspection DataFlowIssue
+        // noinspection DataFlowIssue
         if (getLevel().isClientSide) return;
         if (getOffsetTimer() % 20 == 0) {
             outputPerSec = netEnergyGeneratedLastSec;
@@ -368,7 +368,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
         var maxTempEnergy = .169256 * Math.pow(getTemp() - BOILING_TEMP, 2);
         var availableHeatEnergy = Math.min(getHeat() * 0.2, maxTempEnergy) * holderEfficiency;
 
-        return (long)Math.min(getOverclockVoltage(), availableHeatEnergy);
+        return (long) Math.min(getOverclockVoltage(), availableHeatEnergy);
     }
 
     public @Override long getOverclockVoltage() {
@@ -381,7 +381,6 @@ public class NuclearReactor extends WorkableMultiblockMachine
         return Math.min(tryGenerateAmount, getCurrentProduction());
     }
 
-
     // endregion
     // endregion
 
@@ -389,8 +388,9 @@ public class NuclearReactor extends WorkableMultiblockMachine
         IDisplayUIMachine.super.addDisplayText(textList);
         if (isFormed()) {
             NumberFormat formatter = new DecimalFormat("#0.0");
-            textList.add(Component.translatable("gnt.multiblock.reactor.heat", formatter.format(temp) + C_TO_K_OFFSET, moderatorType.getMaxTemp() + C_TO_K_OFFSET));
-            textList.add(Component.translatable("gnt.multiblock.reactor.powergen", outputPerSec));
+            textList.add(Component.translatable("gnt.multiblock.reactor.heat", formatter.format(temp) + C_TO_K_OFFSET,
+                    moderatorType.getMaxTemp() + C_TO_K_OFFSET));
+            textList.add(Component.translatable("gnt.multiblock.reactor.powergen", getOverclockVoltage()));
 
             var ctrlRodText = Component.translatable("gnt.multiblock.reactor.rods",
                     ChatFormatting.AQUA.toString() + getControlRods() + "%")

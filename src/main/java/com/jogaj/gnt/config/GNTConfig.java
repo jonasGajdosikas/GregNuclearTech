@@ -13,8 +13,8 @@ public class GNTConfig {
     private static final Object LOCK = new Object();
 
     public static void init() {
-        synchronized (LOCK){
-            if(INSTANCE == null)
+        synchronized (LOCK) {
+            if (INSTANCE == null)
                 INSTANCE = Configuration.registerConfig(GNTConfig.class, ConfigFormats.yaml()).getConfigInstance();
         }
     }
