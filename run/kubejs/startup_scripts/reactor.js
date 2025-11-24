@@ -41,6 +41,6 @@ GTCEuStartupEvents.registry('gtceu:machine', event => {
         .model(GTMachineModels.createWorkableCasingMachineModel(
             GNT.resourceLocation("block/casing/machine/radiation_proof"),
             GTCEu.id("block/multiblock/implosion_compressor"))
-                ["andThen(java.util.function.Consumer)"](b => b.addDynamicRenderer(() => GNTDynamicRenderHelper.makeReactorTurbineRender(GNTBlocks.RADIATION_PROOF_CASING, GTBlocks.CASING_TITANIUM_TURBINE)))
+                //["andThen(java.util.function.Consumer)"](b => b.addDynamicRenderer(() => GNTDynamicRenderHelper.makeReactorTurbineRender(GNTBlocks.RADIATION_PROOF_CASING, GTBlocks.CASING_TITANIUM_TURBINE)))
         )
 })

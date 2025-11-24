@@ -60,19 +60,16 @@ public class NuclearReactor extends WorkableMultiblockMachine
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(NuclearReactor.class,
             WorkableMultiblockMachine.MANAGED_FIELD_HOLDER);
 
+    @Override
+    public @NotNull ManagedFieldHolder getFieldHolder() { return  MANAGED_FIELD_HOLDER; }
+
     public static final int MIN_DURABILITY_TO_WARN = 10;
     public static final int TICKS_PER_HEAT_UPDATE = 10;
     public static final int BOILING_TEMP = 100;
     public static final int C_TO_K_OFFSET = 274;
 
-    @Persisted
-    @DescSynced
-    @Getter
-    private int controlRods;
-    @Getter
-    @Persisted
-    @DescSynced
-    private double temp;
+    @Getter @Persisted @DescSynced private int controlRods;
+    @Getter @Persisted @DescSynced private double temp;
 
     private double getHeat() {
         return temp * moderatorType.getHeatCapacity();
@@ -84,8 +81,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
     private @Getter IModeratorType moderatorType = ModeratorBlock.ModeratorType.WATER;
 
-    @Nullable
-    protected TickableSubscription radiationHeatSubs;
+    protected @Nullable TickableSubscription radiationHeatSubs;
     protected ConditionalSubscriptionHandler tickSubscribtion;
 
     private EnergyContainerList outputHatches;
