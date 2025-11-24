@@ -32,3 +32,6 @@ run/*
 !run/kubejs
 run-data/
 /src/generated/resources/.cache/*
+/run/kubejs/config/client.properties
+/run/kubejs/config/common.properties
+/run/kubejs/README.txt

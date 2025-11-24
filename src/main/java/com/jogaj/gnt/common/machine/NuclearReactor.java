@@ -25,6 +25,7 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
+import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 
@@ -65,10 +66,12 @@ public class NuclearReactor extends WorkableMultiblockMachine
     public static final int C_TO_K_OFFSET = 274;
 
     @Persisted
+    @DescSynced
     @Getter
     private int controlRods;
     @Getter
     @Persisted
+    @DescSynced
     private double temp;
 
     private double getHeat() {
@@ -366,7 +369,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
         // making heat energy nonlinear to incentivize use as baseline power
         var maxTempEnergy = .169256 * Math.pow(getTemp() - BOILING_TEMP, 2);
-        var availableHeatEnergy = Math.min(getHeat() * 0.2, maxTempEnergy) * holderEfficiency;
+        var availableHeatEnergy = Math.min(getHeat() * 0.2, maxTempEnergy) * holderEfficiency * rotorBoost();
 
         return (long) Math.min(getOverclockVoltage(), availableHeatEnergy);
     }
@@ -388,9 +391,9 @@ public class NuclearReactor extends WorkableMultiblockMachine
         IDisplayUIMachine.super.addDisplayText(textList);
         if (isFormed()) {
             NumberFormat formatter = new DecimalFormat("#0.0");
-            textList.add(Component.translatable("gnt.multiblock.reactor.heat", formatter.format(temp) + C_TO_K_OFFSET,
+            textList.add(Component.translatable("gnt.multiblock.reactor.heat", formatter.format(temp + C_TO_K_OFFSET),
                     moderatorType.getMaxTemp() + C_TO_K_OFFSET));
-            textList.add(Component.translatable("gnt.multiblock.reactor.powergen", getOverclockVoltage()));
+            textList.add(Component.translatable("gnt.multiblock.reactor.powergen", getCurrentProduction()));
 
             var ctrlRodText = Component.translatable("gnt.multiblock.reactor.rods",
                     ChatFormatting.AQUA.toString() + getControlRods() + "%")
