@@ -9,9 +9,9 @@ public class LangHandler extends com.gregtechceu.gtceu.data.lang.LangHandler {
         GNT.LOGGER.info("generating lang");
 
         replace(provider, "gnt.multiblock.reactor.heat", "Heat %sK / %sK");
-        replace(provider, "gnt.multiblock.reactor.powergen", "Potential power generation %s EU");
+        replace(provider, "gnt.multiblock.reactor.powergen", "Power generation %s EU");
         replace(provider, "gnt.multiblock.reactor.rods", "Rods are %s in");
-        replace(provider, "gnt.multiblock.reactor.rods.tooltip", "Insert control rods deeper to slow down the fission");
+        replace(provider, "gnt.multiblock.reactor.rods.tooltip", "Insert control rods deeper to slow down fission");
         replace(provider, "gnt.multiblock.reactor.rods_modify", "Change depth");
         replace(provider, "gnt.multiblock.reactor.scram", "[SCRAM]");
 
@@ -21,6 +21,8 @@ public class LangHandler extends com.gregtechceu.gtceu.data.lang.LangHandler {
         replace(provider, "gnt.block.moderator.tooltip_conversion",
                 "Converts %s%% of fast neutrons into thermal neutrons");
         replace(provider, "gnt.block.moderator.tooltip_max_temp", "Maximum safe temperature %s");
+
+        replace(provider, "gnt.recipe.neutrons", "%s Thermal neutrons, %s Fast neutrons");
 
         // replace(provider, "block.gnt.water_moderator_block", "Light Water Moderator Block");
     }

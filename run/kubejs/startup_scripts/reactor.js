@@ -1,14 +1,3 @@
-
-
-GTCEuStartupEvents.registry("gtceu:recipe_type", event => {
-    event.create("fission_reactor")
-        .category("multiblock")
-        .setMaxIOSize(4,4,2,2)
-        .setSlotOverlay(false, false, GuiTextures.ARROW_INPUT_OVERLAY)
-        .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, FillDirection.LEFT_TO_RIGHT)
-        .setSound(GTSoundEntries.COOLING)
-})
-
 GTCEuStartupEvents.registry('gtceu:machine', event => {
     event.create('small_fission_reactor', 'multiblock')
         .machine((holder) => new Reactor(holder, 7))

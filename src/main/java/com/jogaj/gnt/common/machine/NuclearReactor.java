@@ -5,11 +5,14 @@ import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.capability.ITurbineMachine;
 import com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.IO;
-import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
+import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.ITieredMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDisplayUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMaintenanceMachine;
@@ -20,11 +23,11 @@ import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
-import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
+import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
+import com.lowdragmc.lowdraglib.gui.widget.*;
 import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
@@ -37,6 +40,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 
 import com.jogaj.gnt.GNT;
 import com.jogaj.gnt.api.block.IModeratorType;
@@ -51,25 +55,35 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
 public class NuclearReactor extends WorkableMultiblockMachine
-                            implements ITieredMachine, IExplosionMachine, IDisplayUIMachine, ITurbineMachine {
+                            implements IFancyUIMachine, ITieredMachine, IExplosionMachine, IDisplayUIMachine,
+                            ITurbineMachine {
 
     protected static final ManagedFieldHolder MANAGED_FIELD_HOLDER = new ManagedFieldHolder(NuclearReactor.class,
             WorkableMultiblockMachine.MANAGED_FIELD_HOLDER);
 
     @Override
-    public @NotNull ManagedFieldHolder getFieldHolder() { return  MANAGED_FIELD_HOLDER; }
+    public @NotNull ManagedFieldHolder getFieldHolder() {
+        return MANAGED_FIELD_HOLDER;
+    }
 
     public static final int MIN_DURABILITY_TO_WARN = 10;
     public static final int TICKS_PER_HEAT_UPDATE = 10;
     public static final int BOILING_TEMP = 100;
     public static final int C_TO_K_OFFSET = 274;
 
-    @Getter @Persisted @DescSynced private int controlRods;
-    @Getter @Persisted @DescSynced private double temp;
+    @Getter
+    @Persisted
+    @DescSynced
+    private int controlRods;
+    @Getter
+    @Persisted
+    @DescSynced
+    private double temp;
 
     private double getHeat() {
         return temp * moderatorType.getHeatCapacity();
@@ -82,7 +96,6 @@ public class NuclearReactor extends WorkableMultiblockMachine
     private @Getter IModeratorType moderatorType = ModeratorBlock.ModeratorType.WATER;
 
     protected @Nullable TickableSubscription radiationHeatSubs;
-    protected ConditionalSubscriptionHandler tickSubscribtion;
 
     private EnergyContainerList outputHatches;
     private long netEnergyGeneratedLastSec;
@@ -94,8 +107,6 @@ public class NuclearReactor extends WorkableMultiblockMachine
     public NuclearReactor(IMachineBlockEntity holder, int tier,
                           Object... args) {
         super(holder, args);
-        this.tickSubscribtion = new ConditionalSubscriptionHandler(this, this::generateEnergyFromHeatTick,
-                this::isFormed);
         this.BASE_EU_OUTPUT = GTValues.V[tier] * 2;
         this.controlRods = 0;
     }
@@ -164,7 +175,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
         var type = getMultiblockState().getMatchContext().get("ModeratorType");
         if (type instanceof IModeratorType moderator) moderatorType = moderator;
         if (getLevel() instanceof ServerLevel serverLevel) {
-            serverLevel.getServer().tell(new TickTask(0, this::updateRadiationHeatSubscription));
+            serverLevel.getServer().tell(new TickTask(0, this::updateWorkSubscription));
         }
         List<IEnergyContainer> outputs = new ArrayList<>();
         Long2ObjectMap<IO> ioMap = getMultiblockState().getMatchContext().getOrCreate("ioMap",
@@ -184,8 +195,6 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
                 if (handlerList.getHandlerIO().support(IO.OUT))
                     outputs.addAll(containers);
-                traitSubscriptions
-                        .add(handlerList.subscribe(tickSubscribtion::updateSubscription, EURecipeCapability.CAP));
             }
         }
         // GNT.LOGGER.info("{} outputs on reactor",outputs.size());
@@ -197,7 +206,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
         super.onStructureInvalid();
         if (getLevel() instanceof ServerLevel serverLevel) {
-            serverLevel.getServer().tell(new TickTask(0, this::updateRadiationHeatSubscription));
+            serverLevel.getServer().tell(new TickTask(0, this::updateWorkSubscription));
         }
     }
 
@@ -209,7 +218,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
         super.onUnload();
     }
 
-    protected void updateRadiationHeatSubscription() {
+    protected void updateWorkSubscription() {
         if (temp > 0) {
             radiationHeatSubs = subscribeServerTick(radiationHeatSubs, this::updateCurrentradiationHeat);
         } else if (radiationHeatSubs != null) {
@@ -221,8 +230,6 @@ public class NuclearReactor extends WorkableMultiblockMachine
     protected void updateCurrentradiationHeat() {
         if (recipeLogic.isWorking()) {
             if (getOffsetTimer() % TICKS_PER_HEAT_UPDATE == 0) {
-                // Heat
-                // DONE: get recipe neutron production and add tickspergen*ctrlRodMult*(thermal+fast*conversion) heat
                 var activeRecipe = recipeLogic.getLastRecipe();
                 if (activeRecipe != null) {
                     int thermal = tryGetRecipeData(activeRecipe, "thermalNeutrons");
@@ -230,51 +237,33 @@ public class NuclearReactor extends WorkableMultiblockMachine
                     int recipeHeat = (int) (thermal + moderatorType.getFastNeutronConversion() * fast);
                     addHeat(TICKS_PER_HEAT_UPDATE * ctrlRodMultiplier() * recipeHeat);
                 }
-            } else if (temp > 0) {
-                // it reduces heat 9 ticks out of 10
-                addHeat(-getHeatDissipation() * 10.0 / 9.0);
             }
+        }
+        if (temp > 0) {
+            // it reduces heat 9 ticks out of 10
+            addHeat(-getHeatDissipation() * 10.0 / 9.0);
         }
 
         if (isFormed() && getOffsetTimer() % TICKS_PER_HEAT_UPDATE == 0) {
-            var maxWaterDrain = (int) temp * TICKS_PER_HEAT_UPDATE /
-                    (ConfigHolder.INSTANCE.machines.largeBoilers.steamPerWater);
-            // if (temp < BOILING_TEMP) {
-            // steamAvailablePerTick = 0;
-            // } else {
-            // var drainWater = List.of(FluidIngredient.of(Fluids.WATER, maxWaterDrain));
-            // List<IRecipeHandler<?>> inputTanks = new ArrayList<>();
-            // inputTanks.addAll(getCapabilitiesFlat(IO.IN, FluidRecipeCapability.CAP));
-            // inputTanks.addAll(getCapabilitiesFlat(IO.BOTH, FluidRecipeCapability.CAP));
-            //
-            // for (IRecipeHandler<?> tank : inputTanks) {
-            // // noinspection unchecked
-            // drainWater = (List<FluidIngredient>) tank.handleRecipe(IO.IN, null, drainWater, false);
-            // if (drainWater == null || drainWater.isEmpty()) break;
-            // }
-            // var drained = (drainWater == null || drainWater.isEmpty()) ? maxWaterDrain :
-            // maxWaterDrain - drainWater.get(0).getAmount();
-            //
-            // if (drained > 0)
-            // steamAvailablePerTick = (long) drained * ConfigHolder.INSTANCE.machines.largeBoilers.steamPerWater;
             if (temp > moderatorType.getMaxTemp()) {
                 if (GNTConfig.INSTANCE.values.scramBeforeOverheat) {
                     scram();
                 }
-                int overheat = moderatorType.getMaxTemp() - (int) temp +
-                        maintenance.getNumMaintenanceProblems() * 10 - GTValues.RNG.nextInt(100);
+                int overheat = (int) temp - moderatorType.getMaxTemp() + maintenance.getNumMaintenanceProblems() * 20 -
+                        GTValues.RNG.nextInt(100);
                 GNT.LOGGER.info("overheating by {}", overheat);
                 if (overheat > 100) {
-                    goVacNuke(overheat / 2f);
+                    goVacNuke(overheat / 5f);
                 }
                 if (overheat > 0) {
-                    byte problem = (byte) (0b1 << GTValues.RNG.nextInt(6));
+                    byte problem = (byte) (maintenance.getMaintenanceProblems() &
+                            (0xff ^ (0b1 << GTValues.RNG.nextInt(6))));
                     maintenance.setMaintenanceProblems(problem);
                 }
             }
-            // }
         }
-        updateRadiationHeatSubscription();
+        generateEnergyFromHeatTick();
+        updateWorkSubscription();
     }
 
     @Override
@@ -283,7 +272,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
         if (getTemp() < moderatorType.getMaxTemp()) {
             if (getTemp() < 1)
                 addHeat(moderatorType.getHeatCapacity());
-            updateRadiationHeatSubscription();
+            updateWorkSubscription();
         }
 
         return value;
@@ -301,6 +290,13 @@ public class NuclearReactor extends WorkableMultiblockMachine
                     doExplosion(center.relative(x).relative(y), power);
             }
         }
+    }
+
+    private void scram() {
+        this.setWorkingEnabled(false);
+        maintenance.setMaintenanceProblems(IMaintenanceMachine.ALL_PROBLEMS);
+        recipeLogic.setSuspendAfterFinish(true);
+        recipeLogic.interruptRecipe();
     }
 
     int tryGetRecipeData(GTRecipe recipe, String key) {
@@ -339,7 +335,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
     // region Power Generation
 
     protected void generateEnergyFromHeatTick() {
-        GNT.LOGGER.info("hello from generateEnergyFromHeatTick");
+        // GNT.LOGGER.info("hello from generateEnergyFromHeatTick");
         // noinspection DataFlowIssue
         if (getLevel().isClientSide) return;
         if (getOffsetTimer() % 20 == 0) {
@@ -382,6 +378,8 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
     // endregion
     // endregion
+
+    // region UI
 
     public void addDisplayText(@NotNull List<Component> textList) {
         IDisplayUIMachine.super.addDisplayText(textList);
@@ -444,9 +442,28 @@ public class NuclearReactor extends WorkableMultiblockMachine
         }
     }
 
-    private void scram() {
-        this.setWorkingEnabled(false);
-        maintenance.setMaintenanceProblems(IMaintenanceMachine.ALL_PROBLEMS);
-        recipeLogic.interruptRecipe();
+    @Override
+    public Widget createUIWidget() {
+        var group = new WidgetGroup(0, 0, 182 + 8, 117 + 8);
+        // noinspection DataFlowIssue
+        group.addWidget(new DraggableScrollableWidgetGroup(4, 4, 182, 117).setBackground(getScreenTexture())
+                .addWidget(new LabelWidget(4, 5, self().getBlockState().getBlock().getDescriptionId()))
+                .addWidget(new ComponentPanelWidget(4, 17, this::addDisplayText)
+                        .textSupplier(this.getLevel().isClientSide ? null : this::addDisplayText)
+                        .setMaxWidthLimit(200)
+                        .clickHandler(this::handleDisplayClick)));
+        group.setBackground(GuiTextures.BACKGROUND_INVERSE);
+        return group;
     }
+
+    @Override
+    public ModularUI createUI(Player entityPlayer) {
+        return new ModularUI(198, 208, this, entityPlayer).widget(new FancyMachineUIWidget(this, 198, 208));
+    }
+
+    @Override
+    public List<IFancyUIProvider> getSubTabs() {
+        return getParts().stream().filter(Objects::nonNull).map(IFancyUIProvider.class::cast).toList();
+    }
+    // endregion
 }
