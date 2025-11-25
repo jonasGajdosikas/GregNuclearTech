@@ -22,7 +22,7 @@ public class LangHandler extends com.gregtechceu.gtceu.data.lang.LangHandler {
                 "Converts %s%% of fast neutrons into thermal neutrons");
         replace(provider, "gnt.block.moderator.tooltip_max_temp", "Maximum safe temperature %s");
 
-        replace(provider, "gnt.recipe.neutrons", "%s Thermal neutrons, %s Fast neutrons");
+        replace(provider, "gnt.recipe.neutrons", "%s Thermal, %s Fast");
 
         // replace(provider, "block.gnt.water_moderator_block", "Light Water Moderator Block");
     }

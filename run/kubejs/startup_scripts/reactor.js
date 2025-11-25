@@ -1,8 +1,10 @@
+
+
 GTCEuStartupEvents.registry('gtceu:machine', event => {
     event.create('small_fission_reactor', 'multiblock')
         .machine((holder) => new Reactor(holder, 7))
         .rotationState(RotationState.NON_Y_AXIS)
-        .recipeType('fission_reactor')
+        .recipeType(GNTRecipeTypes.FISSION_RECIPES)
         .recipeModifiers([GNTModifiers.CONTROL_RODS])
         .appearanceBlock(GNTBlocks.RADIATION_PROOF_CASING)
         .pattern(definition => FactoryBlockPattern.start()

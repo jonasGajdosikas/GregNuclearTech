@@ -6,9 +6,10 @@
   "gnt.block.moderator.tooltip_max_temp": "%s ǝɹnʇɐɹǝdɯǝʇ ǝɟɐs ɯnɯıxɐW",
   "gnt.multiblock.pattern.error.moderator": "ɹ§ǝɯɐs ǝɥʇ ǝq ʇsnɯ sɹoʇɐɹǝpoɯ ןןⱯɔ§",
   "gnt.multiblock.reactor.heat": "ʞ%s / ʞ%s ʇɐǝH",
-  "gnt.multiblock.reactor.powergen": "∩Ǝ %s uoıʇɐɹǝuǝb ɹǝʍod ןɐıʇuǝʇoԀ",
+  "gnt.multiblock.reactor.powergen": "∩Ǝ %s uoıʇɐɹǝuǝb ɹǝʍoԀ",
   "gnt.multiblock.reactor.rods": "uı %s ǝɹɐ spoᴚ",
-  "gnt.multiblock.reactor.rods.tooltip": "uoıssıɟ ǝɥʇ uʍop ʍoןs oʇ ɹǝdǝǝp spoɹ ןoɹʇuoɔ ʇɹǝsuI",
+  "gnt.multiblock.reactor.rods.tooltip": "uoıssıɟ uʍop ʍoןs oʇ ɹǝdǝǝp spoɹ ןoɹʇuoɔ ʇɹǝsuI",
   "gnt.multiblock.reactor.rods_modify": "ɥʇdǝp ǝbuɐɥƆ",
-  "gnt.multiblock.reactor.scram": "]WⱯᴚƆS["
+  "gnt.multiblock.reactor.scram": "]WⱯᴚƆS[",
+  "gnt.recipe.neutrons": "ʇsɐℲ %s 'ןɐɯɹǝɥ⟘ %s"
 }

@@ -20,6 +20,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import com.jogaj.gnt.client.ClientProxy;
 import com.jogaj.gnt.common.data.GNTDatagen;
+import com.jogaj.gnt.common.data.GNTRecipeTypes;
 import com.jogaj.gnt.common.registry.GNTRegistration;
 import com.jogaj.gnt.config.GNTConfig;
 import org.apache.logging.log4j.LogManager;
@@ -119,7 +120,7 @@ public class GNT {
      * @param event event
      */
     private void registerRecipeTypes(GTCEuAPI.RegisterEvent<ResourceLocation, GTRecipeType> event) {
-        // CustomRecipeTypes.init();
+        GNTRecipeTypes.init();
     }
 
     /**

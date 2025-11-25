@@ -6,9 +6,10 @@
   "gnt.block.moderator.tooltip_max_temp": "Maximum safe temperature %s",
   "gnt.multiblock.pattern.error.moderator": "§cAll moderators must be the same§r",
   "gnt.multiblock.reactor.heat": "Heat %sK / %sK",
-  "gnt.multiblock.reactor.powergen": "Potential power generation %s EU",
+  "gnt.multiblock.reactor.powergen": "Power generation %s EU",
   "gnt.multiblock.reactor.rods": "Rods are %s in",
-  "gnt.multiblock.reactor.rods.tooltip": "Insert control rods deeper to slow down the fission",
+  "gnt.multiblock.reactor.rods.tooltip": "Insert control rods deeper to slow down fission",
   "gnt.multiblock.reactor.rods_modify": "Change depth",
-  "gnt.multiblock.reactor.scram": "[SCRAM]"
+  "gnt.multiblock.reactor.scram": "[SCRAM]",
+  "gnt.recipe.neutrons": "%s Thermal, %s Fast"
 }
