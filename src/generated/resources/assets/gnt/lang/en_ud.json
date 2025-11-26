@@ -11,5 +11,8 @@
   "gnt.multiblock.reactor.rods.tooltip": "uoıssıɟ uʍop ʍoןs oʇ ɹǝdǝǝp spoɹ ןoɹʇuoɔ ʇɹǝsuI",
   "gnt.multiblock.reactor.rods_modify": "ɥʇdǝp ǝbuɐɥƆ",
   "gnt.multiblock.reactor.scram": "]WⱯᴚƆS[",
-  "gnt.recipe.neutrons": "ʇsɐℲ %s 'ןɐɯɹǝɥ⟘ %s"
+  "gnt.recipe.neutrons": "ʇsɐℲ %s 'ןɐɯɹǝɥ⟘ %s",
+  "item.gnt.fast_neutron": "uoɹʇnǝN ʇsɐℲ",
+  "item.gnt.thermal_neutron": "uoɹʇnǝN ןɐɯɹǝɥ⟘",
+  "itemGroup.gnt.creative_tab": "ʎboןouɥɔǝ⟘ ɹɐǝןɔnN bǝɹ⅁"
 }

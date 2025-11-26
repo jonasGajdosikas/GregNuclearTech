@@ -11,5 +11,8 @@
   "gnt.multiblock.reactor.rods.tooltip": "Insert control rods deeper to slow down fission",
   "gnt.multiblock.reactor.rods_modify": "Change depth",
   "gnt.multiblock.reactor.scram": "[SCRAM]",
-  "gnt.recipe.neutrons": "%s Thermal, %s Fast"
+  "gnt.recipe.neutrons": "%s Thermal, %s Fast",
+  "item.gnt.fast_neutron": "Fast Neutron",
+  "item.gnt.thermal_neutron": "Thermal Neutron",
+  "itemGroup.gnt.creative_tab": "Greg Nuclear Technology"
 }

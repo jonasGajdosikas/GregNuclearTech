@@ -295,6 +295,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
     private void scram() {
         this.setWorkingEnabled(false);
         maintenance.setMaintenanceProblems(IMaintenanceMachine.ALL_PROBLEMS);
+        controlRods = 100;
         recipeLogic.setSuspendAfterFinish(true);
         recipeLogic.interruptRecipe();
     }
