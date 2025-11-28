@@ -9,7 +9,7 @@ import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
+//import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
@@ -21,8 +21,8 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IRotorHolderMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
-import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
-import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+//import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
+//import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -58,6 +58,8 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
+
+import static com.jogaj.gnt.GNT.LOGGER;
 
 public class NuclearReactor extends WorkableMultiblockMachine
                             implements IFancyUIMachine, ITieredMachine, IExplosionMachine, IDisplayUIMachine,
@@ -97,6 +99,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
     protected @Nullable TickableSubscription radiationHeatSubs;
 
+    private double partialProgress;
     private EnergyContainerList outputHatches;
     private long netEnergyGeneratedLastSec;
     private @Getter long outputPerSec;
@@ -109,6 +112,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
         super(holder, args);
         this.BASE_EU_OUTPUT = GTValues.V[tier] * 2;
         this.controlRods = 0;
+        this.partialProgress = 0;
     }
 
     // region Rotor stuff
@@ -236,6 +240,11 @@ public class NuclearReactor extends WorkableMultiblockMachine
                     int fast = tryGetRecipeData(activeRecipe, "fastNeutrons");
                     int recipeHeat = (int) (thermal + moderatorType.getFastNeutronConversion() * fast);
                     addHeat(TICKS_PER_HEAT_UPDATE * ctrlRodMultiplier() * recipeHeat);
+
+                    partialProgress += Math.pow(ctrlRodMultiplier(), 0.95);
+                    //LOGGER.info(partialProgress);
+                    if (partialProgress >= 1.0) partialProgress -= 1.0;
+                    else recipeLogic.setProgress(recipeLogic.getProgress() - TICKS_PER_HEAT_UPDATE);
                 }
             }
         }
@@ -251,7 +260,7 @@ public class NuclearReactor extends WorkableMultiblockMachine
                 }
                 int overheat = (int) temp - moderatorType.getMaxTemp() + maintenance.getNumMaintenanceProblems() * 20 -
                         GTValues.RNG.nextInt(100);
-                GNT.LOGGER.info("overheating by {}", overheat);
+                //GNT.LOGGER.info("overheating by {}", overheat);
                 if (overheat > 100) {
                     goVacNuke(overheat / 5f);
                 }
@@ -312,24 +321,24 @@ public class NuclearReactor extends WorkableMultiblockMachine
         return 1.0 - (controlRods / 125.0);
     }
 
-    /**
-     * Recipe Modifier for <b>Nuclear Reactors</b> - can be used as a valid {@link RecipeModifier}
-     * <p>
-     * Duration is multiplied with {@code (1- controlRods/125)^-.95} if control rods are inserted more than 0
-     * </p>
-     *
-     * @param machine a {@link NuclearReactor}
-     * @param recipe  recipe
-     * @return A {@link ModifierFunction} for the given reactor and recipe
-     */
-    public static ModifierFunction ctrlRodModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe) {
-        if (!(machine instanceof NuclearReactor reactor))
-            return RecipeModifier.nullWrongType(NuclearReactor.class, machine);
-        if (reactor.controlRods == 0) return ModifierFunction.IDENTITY;
-        return ModifierFunction.builder()
-                .durationMultiplier(Math.pow(reactor.ctrlRodMultiplier(), -0.95))
-                .build();
-    }
+//    /**
+//     * Recipe Modifier for <b>Nuclear Reactors</b> - can be used as a valid {@link RecipeModifier}
+//     * <p>
+//     * Duration is multiplied with {@code (1- controlRods/125)^-.95} if control rods are inserted more than 0
+//     * </p>
+//     *
+//     * @param machine a {@link NuclearReactor}
+//     * @param recipe  recipe
+//     * @return A {@link ModifierFunction} for the given reactor and recipe
+//     */
+//    public static ModifierFunction ctrlRodModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe) {
+//        if (!(machine instanceof NuclearReactor reactor))
+//            return RecipeModifier.nullWrongType(NuclearReactor.class, machine);
+//        if (reactor.controlRods == 0) return ModifierFunction.IDENTITY;
+//        return ModifierFunction.builder()
+//                .durationMultiplier(Math.pow(reactor.ctrlRodMultiplier(), -0.95))
+//                .build();
+//    }
 
     // endregion
 
@@ -352,6 +361,16 @@ public class NuclearReactor extends WorkableMultiblockMachine
         }
     }
 
+    enum CappedBy {
+        TEMP,
+        HEAT,
+        OUTPUT
+    }
+
+    private double moderatorMult(){
+        return Math.cbrt(moderatorType.getHeatCapacity());
+    }
+
     @Override
     public long getCurrentProduction() {
         var rotorHolder = getRotorHolder();
@@ -362,9 +381,22 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
         // making heat energy nonlinear to incentivize use as baseline power
         var maxTempEnergy = .169256 * Math.pow(getTemp() - BOILING_TEMP, 2);
-        var availableHeatEnergy = Math.min(getHeat() * 0.2, maxTempEnergy) * holderEfficiency * rotorBoost();
+        var availableHeatEnergy = maxTempEnergy * moderatorMult() * holderEfficiency * rotorBoost();
 
         return (long) Math.min(getOverclockVoltage(), availableHeatEnergy);
+    }
+
+    private CappedBy productionCap(){
+        var rotorHolder = getRotorHolder();
+        if (rotorHolder == null) return CappedBy.OUTPUT;
+        double holderEfficiency = rotorHolder.getTotalEfficiency() / 100.0;
+        // don't make energy if there is no requirement or if there is no working rotor
+        if (holderEfficiency <= 0) return CappedBy.OUTPUT;
+
+        var maxTempEnergy = .169256 * Math.pow(getTemp() - BOILING_TEMP, 2);
+        var availableHeatEnergy = maxTempEnergy * moderatorMult() * holderEfficiency * rotorBoost();
+
+        return (getOverclockVoltage() < availableHeatEnergy) ? CappedBy.OUTPUT : CappedBy.TEMP;
     }
 
     public @Override long getOverclockVoltage() {
@@ -388,7 +420,10 @@ public class NuclearReactor extends WorkableMultiblockMachine
             NumberFormat formatter = new DecimalFormat("#0.0");
             textList.add(Component.translatable("gnt.multiblock.reactor.heat", formatter.format(temp + C_TO_K_OFFSET),
                     moderatorType.getMaxTemp() + C_TO_K_OFFSET));
-            textList.add(Component.translatable("gnt.multiblock.reactor.powergen", getCurrentProduction()));
+            var powerText = Component.translatable("gnt.multiblock.reactor.powergen", getCurrentProduction())
+                            .withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                    Component.literal(productionCap().toString()))));
+            textList.add(powerText);
 
             var ctrlRodText = Component.translatable("gnt.multiblock.reactor.rods",
                     ChatFormatting.AQUA.toString() + getControlRods() + "%")

@@ -1,6 +1,5 @@
 package com.jogaj.gnt.common.data;
 
-import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 import com.gregtechceu.gtceu.common.data.models.GTModels;
 
 import net.minecraft.client.renderer.RenderType;
@@ -25,7 +24,7 @@ import static com.jogaj.gnt.common.registry.GNTRegistration.REGISTRATE;
 public class GNTBlocks {
 
     static {
-        REGISTRATE.creativeModeTab(() -> GTCreativeModeTabs.DECORATION);
+        REGISTRATE.creativeModeTab(() -> GNT.GNT_CREATIVE_TAB);
     }
     // Moderator Blocks
     public static final BlockEntry<ModeratorBlock> MODERATOR_WATER = createModeratorBlock(

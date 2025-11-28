@@ -1,5 +1,6 @@
 {
   "block.gnt.radiation_proof_casing": "Radiation Proof Casing",
+  "block.gnt.small_fission_reactor": "Small Fission Reactor",
   "block.gnt.water_moderator_block": "Water Moderator Block",
   "gnt.block.moderator.tooltip_conversion": "Converts %s%% of fast neutrons into thermal neutrons",
   "gnt.block.moderator.tooltip_extended_info": "§7Hold SHIFT to show Moderator Bonus Info",

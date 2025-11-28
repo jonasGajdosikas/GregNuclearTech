@@ -1,0 +1,101 @@
+{
+  "parent": "minecraft:block/block",
+  "dynamic_renders": [
+    {
+      "type": "gnt:reactor_turbine",
+      "turbine_casing": {
+        "Name": "gtceu:titanium_turbine_casing"
+      },
+      "wall_casing": {
+        "Name": "gnt:radiation_proof_casing"
+      }
+    }
+  ],
+  "loader": "gtceu:machine",
+  "machine": "gnt:small_fission_reactor",
+  "texture_overrides": {
+    "all": "gnt:block/casing/machine/radiation_proof"
+  },
+  "variants": {
+    "is_formed=false,recipe_logic_status=idle": {
+      "model": {
+        "parent": "gtceu:block/machine/template/cube_all/sided",
+        "textures": {
+          "all": "gnt:block/casing/machine/radiation_proof",
+          "overlay_front": "gtceu:block/multiblock/implosion_compressor/overlay_front",
+          "overlay_front_emissive": "gtceu:block/multiblock/implosion_compressor/overlay_front_emissive"
+        }
+      }
+    },
+    "is_formed=false,recipe_logic_status=suspend": {
+      "model": {
+        "parent": "gtceu:block/machine/template/cube_all/sided",
+        "textures": {
+          "all": "gnt:block/casing/machine/radiation_proof",
+          "overlay_front": "gtceu:block/multiblock/implosion_compressor/overlay_front_paused",
+          "overlay_front_emissive": "gtceu:block/multiblock/implosion_compressor/overlay_front_paused_emissive"
+        }
+      }
+    },
+    "is_formed=false,recipe_logic_status=waiting": {
+      "model": {
+        "parent": "gtceu:block/machine/template/cube_all/sided",
+        "textures": {
+          "all": "gnt:block/casing/machine/radiation_proof",
+          "overlay_front": "gtceu:block/multiblock/implosion_compressor/overlay_front_active",
+          "overlay_front_emissive": "gtceu:block/multiblock/implosion_compressor/overlay_front_active_emissive"
+        }
+      }
+    },
+    "is_formed=false,recipe_logic_status=working": {
+      "model": {
+        "parent": "gtceu:block/machine/template/cube_all/sided",
+        "textures": {
+          "all": "gnt:block/casing/machine/radiation_proof",
+          "overlay_front": "gtceu:block/multiblock/implosion_compressor/overlay_front_active",
+          "overlay_front_emissive": "gtceu:block/multiblock/implosion_compressor/overlay_front_active_emissive"
+        }
+      }
+    },
+    "is_formed=true,recipe_logic_status=idle": {
+      "model": {
+        "parent": "gtceu:block/machine/template/cube_all/sided",
+        "textures": {
+          "all": "gnt:block/casing/machine/radiation_proof",
+          "overlay_front": "gtceu:block/multiblock/implosion_compressor/overlay_front",
+          "overlay_front_emissive": "gtceu:block/multiblock/implosion_compressor/overlay_front_emissive"
+        }
+      }
+    },
+    "is_formed=true,recipe_logic_status=suspend": {
+      "model": {
+        "parent": "gtceu:block/machine/template/cube_all/sided",
+        "textures": {
+          "all": "gnt:block/casing/machine/radiation_proof",
+          "overlay_front": "gtceu:block/multiblock/implosion_compressor/overlay_front_paused",
+          "overlay_front_emissive": "gtceu:block/multiblock/implosion_compressor/overlay_front_paused_emissive"
+        }
+      }
+    },
+    "is_formed=true,recipe_logic_status=waiting": {
+      "model": {
+        "parent": "gtceu:block/machine/template/cube_all/sided",
+        "textures": {
+          "all": "gnt:block/casing/machine/radiation_proof",
+          "overlay_front": "gtceu:block/multiblock/implosion_compressor/overlay_front_active",
+          "overlay_front_emissive": "gtceu:block/multiblock/implosion_compressor/overlay_front_active_emissive"
+        }
+      }
+    },
+    "is_formed=true,recipe_logic_status=working": {
+      "model": {
+        "parent": "gtceu:block/machine/template/cube_all/sided",
+        "textures": {
+          "all": "gnt:block/casing/machine/radiation_proof",
+          "overlay_front": "gtceu:block/multiblock/implosion_compressor/overlay_front_active",
+          "overlay_front_emissive": "gtceu:block/multiblock/implosion_compressor/overlay_front_active_emissive"
+        }
+      }
+    }
+  }
+}

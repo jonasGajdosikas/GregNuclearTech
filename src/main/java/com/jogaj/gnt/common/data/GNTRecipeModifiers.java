@@ -6,5 +6,5 @@ import com.jogaj.gnt.common.machine.NuclearReactor;
 
 public class GNTRecipeModifiers {
 
-    public static RecipeModifier CONTROL_RODS = NuclearReactor::ctrlRodModifier;
+    //public static RecipeModifier CONTROL_RODS = NuclearReactor::ctrlRodModifier;
 }

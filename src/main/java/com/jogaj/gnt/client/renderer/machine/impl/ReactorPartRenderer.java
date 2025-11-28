@@ -1,6 +1,5 @@
 package com.jogaj.gnt.client.renderer.machine.impl;
 
-import com.gregtechceu.gtceu.api.capability.recipe.IO;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
@@ -41,22 +40,22 @@ public class ReactorPartRenderer extends DynamicRender<MultiblockControllerMachi
 
     // spotless:off
     public static final Codec<ReactorPartRenderer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            BlockState.CODEC.fieldOf("").forGetter(ReactorPartRenderer::getCasing),
-            BlockState.CODEC.fieldOf("").forGetter(ReactorPartRenderer::getTurbineCasing)
+            BlockState.CODEC.fieldOf("wall_casing").forGetter(ReactorPartRenderer::getWallCasing),
+            BlockState.CODEC.fieldOf("turbine_casing").forGetter(ReactorPartRenderer::getTurbineCasing)
     ).apply(instance, ReactorPartRenderer::new));
     public static final DynamicRenderType<MultiblockControllerMachine, ReactorPartRenderer> TYPE = new DynamicRenderType<>(ReactorPartRenderer.CODEC);
     // spotless:on
 
-    private final @Getter BlockState casing, turbineCasing;
+    private final @Getter BlockState wallCasing, turbineCasing;
 
     private BakedModel casingModel, turbineCasingModel;
 
-    public ReactorPartRenderer(Supplier<? extends Block> casing, Supplier<? extends Block> turbineCasing) {
-        this(casing.get().defaultBlockState(), turbineCasing.get().defaultBlockState());
+    public ReactorPartRenderer(Supplier<? extends Block> wallCasing, Supplier<? extends Block> turbineCasing) {
+        this(wallCasing.get().defaultBlockState(), turbineCasing.get().defaultBlockState());
     }
 
-    public ReactorPartRenderer(BlockState casing, BlockState turbineCasing) {
-        this.casing = casing;
+    public ReactorPartRenderer(BlockState wallCasing, BlockState turbineCasing) {
+        this.wallCasing = wallCasing;
         this.turbineCasing = turbineCasing;
     }
 
@@ -74,18 +73,19 @@ public class ReactorPartRenderer extends DynamicRender<MultiblockControllerMachi
     public void renderPartModel(List<BakedQuad> quads, IMultiController machine, IMultiPart part, Direction frontFacing,
                                 @Nullable Direction side, RandomSource rand, @NotNull ModelData modelData,
                                 @Nullable RenderType renderType) {
-        if (casingModel == null) casingModel = getModelForState(casing);
+        if (casingModel == null) casingModel = getModelForState(wallCasing);
         if (turbineCasingModel == null) turbineCasingModel = getModelForState(turbineCasing);
-        BakedModel model = shouldRenderAsTurbineCasing(part) ? turbineCasingModel : casingModel;
-        BlockState state = shouldRenderAsTurbineCasing(part) ? turbineCasing : casing;
-        emitQuads(quads, model, machine.self().getLevel(), part.self().getPos(), state, side, rand, modelData,
+        if (shouldRenderAsTurbineCasing(part))
+            emitQuads(quads, turbineCasingModel, machine.self().getLevel(), part.self().getPos(), turbineCasing, side, rand, modelData,
                 renderType);
+        else
+            emitQuads(quads, casingModel, machine.self().getLevel(), part.self().getPos(), wallCasing, side, rand, modelData,
+                    renderType);
     }
 
     boolean shouldRenderAsTurbineCasing(IMultiPart part) {
         if (part instanceof RotorHolderPartMachine) return true;
-        if (!(part instanceof EnergyHatchPartMachine energyHatch)) return false;
-        return energyHatch.energyContainer.getHandlerIO().equals(IO.OUT);
+        return (part instanceof EnergyHatchPartMachine);
     }
 
     private BakedModel getModelForState(BlockState state) {

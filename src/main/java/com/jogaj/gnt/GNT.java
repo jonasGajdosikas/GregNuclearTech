@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.api.sound.SoundEntry;
 import com.gregtechceu.gtceu.common.data.GTCreativeModeTabs;
 import com.jogaj.gnt.common.GNTItems;
 import com.jogaj.gnt.common.data.GNTBlocks;
+import com.jogaj.gnt.common.data.machines.GNTMachines;
 import com.lowdragmc.lowdraglib.Platform;
 
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -81,6 +82,7 @@ public class GNT {
         GNTConfig.init();
         GNTDatagen.init();
         GNTItems.init();
+        //GNTMachines.init();
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -146,7 +148,7 @@ public class GNT {
      * @param event event
      */
     private void registerMachines(GTCEuAPI.RegisterEvent<ResourceLocation, MachineDefinition> event) {
-        // CustomMachines.init();
+        GNTMachines.init();
     }
 
     /**
