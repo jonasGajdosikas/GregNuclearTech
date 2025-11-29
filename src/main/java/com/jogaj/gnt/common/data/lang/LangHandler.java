@@ -9,10 +9,13 @@ public class LangHandler extends com.gregtechceu.gtceu.data.lang.LangHandler {
         GNT.LOGGER.info("generating lang");
 
         replace(provider, "gnt.multiblock.reactor.heat", "Heat %sK / %sK");
-        replace(provider, "gnt.multiblock.reactor.powergen", "Power generation %s EU");
+        replace(provider, "gnt.multiblock.reactor.powergen", "Producing %s A");
+        replace(provider, "gnt.multiblock.reactor.powergen_at", " @ ");
         replace(provider, "gnt.multiblock.reactor.rods", "Rods are %s in");
         replace(provider, "gnt.multiblock.reactor.rods.tooltip", "Insert control rods deeper to slow down fission");
         replace(provider, "gnt.multiblock.reactor.rods_modify", "Change depth");
+        replace(provider, "gnt.multiblock.reactor.fuel_1", "Using");
+        replace(provider, "gnt.multiblock.reactor.fuel_2", "fuel rods");
         replace(provider, "gnt.multiblock.reactor.scram", "[SCRAM]");
 
         replace(provider, "gnt.multiblock.pattern.error.moderator", "§cAll moderators must be the same§r");

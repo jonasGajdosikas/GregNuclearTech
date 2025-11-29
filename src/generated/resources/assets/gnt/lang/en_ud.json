@@ -1,4 +1,5 @@
 {
+  "block.gnt.large_fission_reactor": "ɹoʇɔɐǝᴚ uoıssıℲ ǝbɹɐꞀ",
   "block.gnt.radiation_proof_casing": "buısɐƆ ɟooɹԀ uoıʇɐıpɐᴚ",
   "block.gnt.small_fission_reactor": "ɹoʇɔɐǝᴚ uoıssıℲ ןןɐɯS",
   "block.gnt.water_moderator_block": "ʞɔoןᗺ ɹoʇɐɹǝpoW ɹǝʇɐM",
@@ -6,8 +7,11 @@
   "gnt.block.moderator.tooltip_extended_info": "oɟuI snuoᗺ ɹoʇɐɹǝpoW ʍoɥs oʇ ⟘ℲIHS pןoHㄥ§",
   "gnt.block.moderator.tooltip_max_temp": "%s ǝɹnʇɐɹǝdɯǝʇ ǝɟɐs ɯnɯıxɐW",
   "gnt.multiblock.pattern.error.moderator": "ɹ§ǝɯɐs ǝɥʇ ǝq ʇsnɯ sɹoʇɐɹǝpoɯ ןןⱯɔ§",
+  "gnt.multiblock.reactor.fuel_1": "buıs∩",
+  "gnt.multiblock.reactor.fuel_2": "spoɹ ןǝnɟ",
   "gnt.multiblock.reactor.heat": "ʞ%s / ʞ%s ʇɐǝH",
-  "gnt.multiblock.reactor.powergen": "∩Ǝ %s uoıʇɐɹǝuǝb ɹǝʍoԀ",
+  "gnt.multiblock.reactor.powergen": "Ɐ %s buıɔnpoɹԀ",
+  "gnt.multiblock.reactor.powergen_at": " @ ",
   "gnt.multiblock.reactor.rods": "uı %s ǝɹɐ spoᴚ",
   "gnt.multiblock.reactor.rods.tooltip": "uoıssıɟ uʍop ʍoןs oʇ ɹǝdǝǝp spoɹ ןoɹʇuoɔ ʇɹǝsuI",
   "gnt.multiblock.reactor.rods_modify": "ɥʇdǝp ǝbuɐɥƆ",

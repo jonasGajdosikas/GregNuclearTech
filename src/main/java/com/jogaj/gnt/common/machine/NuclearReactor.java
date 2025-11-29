@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 //import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
@@ -23,12 +24,17 @@ import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 //import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
 //import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.recipe.content.ContentModifier;
+import com.gregtechceu.gtceu.api.recipe.modifier.ModifierFunction;
+import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
+import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.client.util.TooltipHelper;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
+import com.gregtechceu.gtceu.utils.GTUtil;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.*;
-import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
 import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 
@@ -36,6 +42,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
@@ -59,8 +66,6 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import static com.jogaj.gnt.GNT.LOGGER;
-
 public class NuclearReactor extends WorkableMultiblockMachine
                             implements IFancyUIMachine, ITieredMachine, IExplosionMachine, IDisplayUIMachine,
                             ITurbineMachine {
@@ -78,14 +83,9 @@ public class NuclearReactor extends WorkableMultiblockMachine
     public static final int BOILING_TEMP = 100;
     public static final int C_TO_K_OFFSET = 274;
 
-    @Getter
-    @Persisted
-    @DescSynced
-    private int controlRods;
-    @Getter
-    @Persisted
-    @DescSynced
-    private double temp;
+    private @Getter @Persisted int controlRods;
+    private @Getter @Persisted double temp;
+    private @Getter @Persisted int usedRods;
 
     private double getHeat() {
         return temp * moderatorType.getHeatCapacity();
@@ -106,11 +106,15 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
     private IMaintenanceMachine maintenance;
     private final long BASE_EU_OUTPUT;
+    private final @Getter int tier, fuelRods;
 
-    public NuclearReactor(IMachineBlockEntity holder, int tier,
+    public NuclearReactor(IMachineBlockEntity holder, int tier, int fuelRods,
                           Object... args) {
         super(holder, args);
+        this.tier = tier;
         this.BASE_EU_OUTPUT = GTValues.V[tier] * 2;
+        this.fuelRods = fuelRods;
+        this.usedRods = fuelRods;
         this.controlRods = 0;
         this.partialProgress = 0;
     }
@@ -239,7 +243,8 @@ public class NuclearReactor extends WorkableMultiblockMachine
                     int thermal = tryGetRecipeData(activeRecipe, "thermalNeutrons");
                     int fast = tryGetRecipeData(activeRecipe, "fastNeutrons");
                     int recipeHeat = (int) (thermal + moderatorType.getFastNeutronConversion() * fast);
-                    addHeat(TICKS_PER_HEAT_UPDATE * ctrlRodMultiplier() * recipeHeat);
+                    double mult = Mth.sqrt(activeRecipe.parallels);
+                    addHeat(TICKS_PER_HEAT_UPDATE * ctrlRodMultiplier() * recipeHeat * mult);
 
                     partialProgress += Math.pow(ctrlRodMultiplier(), 0.95);
                     //LOGGER.info(partialProgress);
@@ -321,24 +326,27 @@ public class NuclearReactor extends WorkableMultiblockMachine
         return 1.0 - (controlRods / 125.0);
     }
 
-//    /**
-//     * Recipe Modifier for <b>Nuclear Reactors</b> - can be used as a valid {@link RecipeModifier}
-//     * <p>
-//     * Duration is multiplied with {@code (1- controlRods/125)^-.95} if control rods are inserted more than 0
-//     * </p>
-//     *
-//     * @param machine a {@link NuclearReactor}
-//     * @param recipe  recipe
-//     * @return A {@link ModifierFunction} for the given reactor and recipe
-//     */
-//    public static ModifierFunction ctrlRodModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe) {
-//        if (!(machine instanceof NuclearReactor reactor))
-//            return RecipeModifier.nullWrongType(NuclearReactor.class, machine);
-//        if (reactor.controlRods == 0) return ModifierFunction.IDENTITY;
-//        return ModifierFunction.builder()
-//                .durationMultiplier(Math.pow(reactor.ctrlRodMultiplier(), -0.95))
-//                .build();
-//    }
+    /**
+     * Recipe Modifier for <b>Nuclear Reactors</b> - can be used as a valid {@link RecipeModifier}
+     * <p>
+     * Is similar to the parallel hatch modifier, but capped by the machine
+     * </p>
+     *
+     * @param machine a {@link NuclearReactor}
+     * @param recipe  recipe
+     * @return A {@link ModifierFunction} for the given reactor and recipe
+     */
+    public static ModifierFunction fuelRodModifier(@NotNull MetaMachine machine, @NotNull GTRecipe recipe) {
+        if (!(machine instanceof NuclearReactor reactor))
+            return RecipeModifier.nullWrongType(NuclearReactor.class, machine);
+        int parallels = ParallelLogic.getParallelAmount(machine, recipe, reactor.usedRods);
+
+        if (parallels == 1) return ModifierFunction.IDENTITY;
+        return ModifierFunction.builder()
+                .modifyAllContents(ContentModifier.multiplier(parallels))
+                .parallels(parallels)
+                .build();
+    }
 
     // endregion
 
@@ -420,10 +428,35 @@ public class NuclearReactor extends WorkableMultiblockMachine
             NumberFormat formatter = new DecimalFormat("#0.0");
             textList.add(Component.translatable("gnt.multiblock.reactor.heat", formatter.format(temp + C_TO_K_OFFSET),
                     moderatorType.getMaxTemp() + C_TO_K_OFFSET));
-            var powerText = Component.translatable("gnt.multiblock.reactor.powergen", getCurrentProduction())
-                            .withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                    Component.literal(productionCap().toString()))));
-            textList.add(powerText);
+
+//            var powerText = Component.translatable("gnt.multiblock.reactor.powergen", getCurrentProduction())
+//                            .withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+//                                    Component.literal(productionCap().toString()))));
+//            long EUt = getCurrentProduction();
+//            long voltage = outputHatches.getHighestInputVoltage();
+//            var tier = GTUtil.getTierByVoltage(voltage);
+//            float amps = (float) EUt / voltage;
+//            powerText = Component
+//                    .translatable("gnt.multiblock.reactor.powergen",
+//                            FormattingUtil.formatNumber2Places(amps))
+//                    .withStyle(ChatFormatting.RED)
+//                    .append(Component.translatable("gtceu.jade.at").withStyle(ChatFormatting.GREEN));
+//            if (tier < GTValues.TIER_COUNT){
+//                powerText.append(Component.literal(GTValues.VNF[tier]))
+//                        .withStyle(style -> style.withColor(GTValues.VC[tier]));
+//            } else {
+//                int speed = Mth.clamp(tier - GTValues.TIER_COUNT - 1, 0, GTValues.TIER_COUNT);
+//                powerText.append(Component.literal("MAX")
+//                        .withStyle(style -> style.withColor(TooltipHelper.rainbowColor(speed)))
+//                        .append(Component.literal("+")
+//                                .withStyle(style -> style.withColor(GTValues.VC[speed]))
+//                                .append(FormattingUtil.formatNumbers(speed))));
+//            }
+//            powerText.append(Component.translatable("gtceu.universal.padded_parentheses",
+//                    (Component.translatable("gtceu.recipe.eu.total",
+//                    FormattingUtil.formatNumbers(EUt))))
+//                    .withStyle(ChatFormatting.WHITE));
+//            textList.add(powerText);
 
             var ctrlRodText = Component.translatable("gnt.multiblock.reactor.rods",
                     ChatFormatting.AQUA.toString() + getControlRods() + "%")
@@ -433,14 +466,30 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
             var buttonText = Component.translatable("gnt.multiblock.reactor.rods_modify");
             buttonText.append(" ");
-            buttonText.append(ComponentPanelWidget.withButton(Component.literal("[-]"), "sub"));
+            buttonText.append(ComponentPanelWidget.withButton(Component.literal("[-]"), "subC"));
             buttonText.append(" ");
-            buttonText.append(ComponentPanelWidget.withButton(Component.literal("[+]"), "add"));
+            buttonText.append(ComponentPanelWidget.withButton(Component.literal("[+]"), "addC"));
             textList.add(buttonText);
 
+            var fuelText = Component.translatable("gnt.multiblock.reactor.fuel_1").append(" ");
+            fuelText.append(
+                withConditionalStyle(
+                    ComponentPanelWidget.withButton(Component.literal("<"),"subF").copy(),
+                        usedRods == 1, Style.EMPTY.withColor(ChatFormatting.DARK_GRAY)));
+            fuelText.append(Component.literal(String.valueOf(usedRods)));
+            fuelText.append(
+                withConditionalStyle(
+                    ComponentPanelWidget.withButton(Component.literal(">"), "addF").copy(),
+                    usedRods == fuelRods, Style.EMPTY.withColor(ChatFormatting.DARK_GRAY)
+                )
+            );
+            fuelText.append(" ").append(Component.translatable("gnt.multiblock.reactor.fuel_2"));
+
+            textList.add(fuelText);
+
+
             textList.add(ComponentPanelWidget.withButton(
-                    Component.literal(ChatFormatting.RED.toString())
-                            .append(Component.translatable("gnt.multiblock.reactor.scram")),
+                    Component.translatable("gnt.multiblock.reactor.scram").setStyle(Style.EMPTY.withColor(ChatFormatting.RED)),
                     "scram"));
 
             var rotorHolder = getRotorHolder();
@@ -453,21 +502,29 @@ public class NuclearReactor extends WorkableMultiblockMachine
 
                 int rotorDurability = rotorHolder.getRotorDurabilityPercent();
                 var duraText = Component.translatable("gtceu.multiblock.turbine.rotor_durability", rotorDurability);
-                textList.add((rotorDurability > MIN_DURABILITY_TO_WARN) ?
-                        duraText :
-                        duraText.setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
+                textList.add(withConditionalStyle(duraText, rotorDurability < MIN_DURABILITY_TO_WARN, Style.EMPTY.withColor(ChatFormatting.RED)));
             }
         }
     }
+     private MutableComponent withConditionalStyle(MutableComponent component, boolean argument, Style style){
+        if (argument) return component.setStyle(style);
+        return component;
+     }
 
     public void handleDisplayClick(String componentData, ClickData clickData) {
         if (!clickData.isRemote) {
             switch (componentData) {
-                case "add":
+                case "addC":
                     this.controlRods = Mth.clamp(controlRods + 5, 0, 100);
                     break;
-                case "sub":
+                case "subC":
                     this.controlRods = Mth.clamp(controlRods - 5, 0, 100);
+                    break;
+                case "addF":
+                    this.usedRods = Mth.clamp(usedRods + 1, 1, fuelRods);
+                    break;
+                case "subF":
+                    this.usedRods = Mth.clamp(usedRods - 1, 1, fuelRods);
                     break;
                 case "scram":
                     scram();

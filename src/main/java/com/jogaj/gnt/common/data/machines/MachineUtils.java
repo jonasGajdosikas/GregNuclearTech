@@ -19,24 +19,25 @@ import static com.jogaj.gnt.common.registry.GNTRegistration.REGISTRATE;
 import java.util.function.Function;
 
 public class MachineUtils {
-    public static MultiblockMachineDefinition registerFissionReactor(String name, String lang, int tier,
+    public static MultiblockMachineDefinition registerFissionReactor(String name, String lang, int tier, int fuelRods,
                                                                      BlockEntry<Block> casing, BlockEntry<Block> turbineCasing,
                                                                      Function<MultiblockMachineDefinition, BlockPattern> patternFunction) {
-        return registerFissionReactor(REGISTRATE, name, lang, tier, casing, turbineCasing, patternFunction);
+        return registerFissionReactor(REGISTRATE, name, lang, tier, fuelRods, casing, turbineCasing, patternFunction);
 
     }
 
     public static MultiblockMachineDefinition registerFissionReactor(
-            GTRegistrate registrate, String name, String lang, int tier,
+            GTRegistrate registrate, String name, String lang, int tier, int fuelRods,
             BlockEntry<Block> casing, BlockEntry<Block> turbineCasing,
             Function<MultiblockMachineDefinition, BlockPattern> patternFunction
             ){
         return registrate
-                .multiblock(name, holder -> new NuclearReactor(holder, tier))
+                .multiblock(name, holder -> new NuclearReactor(holder, tier, fuelRods))
                 .langValue(lang)
                 .allowExtendedFacing(false)
                 .rotationState(RotationState.NON_Y_AXIS)
                 .recipeType(GNTRecipeTypes.FISSION_RECIPES)
+                .recipeModifier(NuclearReactor::fuelRodModifier)
                 .appearanceBlock(casing)
                 .partAppearance(
                         (controller, part, side) ->

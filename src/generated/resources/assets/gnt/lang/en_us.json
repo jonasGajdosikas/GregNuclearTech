@@ -1,4 +1,5 @@
 {
+  "block.gnt.large_fission_reactor": "Large Fission Reactor",
   "block.gnt.radiation_proof_casing": "Radiation Proof Casing",
   "block.gnt.small_fission_reactor": "Small Fission Reactor",
   "block.gnt.water_moderator_block": "Water Moderator Block",
@@ -6,8 +7,11 @@
   "gnt.block.moderator.tooltip_extended_info": "§7Hold SHIFT to show Moderator Bonus Info",
   "gnt.block.moderator.tooltip_max_temp": "Maximum safe temperature %s",
   "gnt.multiblock.pattern.error.moderator": "§cAll moderators must be the same§r",
+  "gnt.multiblock.reactor.fuel_1": "Using",
+  "gnt.multiblock.reactor.fuel_2": "fuel rods",
   "gnt.multiblock.reactor.heat": "Heat %sK / %sK",
-  "gnt.multiblock.reactor.powergen": "Power generation %s EU",
+  "gnt.multiblock.reactor.powergen": "Producing %s A",
+  "gnt.multiblock.reactor.powergen_at": " @ ",
   "gnt.multiblock.reactor.rods": "Rods are %s in",
   "gnt.multiblock.reactor.rods.tooltip": "Insert control rods deeper to slow down fission",
   "gnt.multiblock.reactor.rods_modify": "Change depth",
